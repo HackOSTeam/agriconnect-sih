@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+__pycache__/
+
+# Environment variables (Keep your API keys safe!)
+.env
+.env.local
+
+# Build files
+dist/
+build/
+
+# OS files
+.DS_Store
+Thumbs.db
