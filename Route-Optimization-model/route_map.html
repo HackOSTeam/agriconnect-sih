@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_274f0722f480a7189d2f0309d6295692 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_274f0722f480a7189d2f0309d6295692" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_274f0722f480a7189d2f0309d6295692 = L.map(
+                "map_274f0722f480a7189d2f0309d6295692",
+                {
+                    center: [18.5204, 73.8567],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 11,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_998c3b8db0242d723e531760001c1d4e = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_998c3b8db0242d723e531760001c1d4e.addTo(map_274f0722f480a7189d2f0309d6295692);
+        
+    
+            var marker_b46aba2f613c75b641d3f5ec4ac0a8ed = L.marker(
+                [18.5204, 73.8567],
+                {
+}
+            ).addTo(map_274f0722f480a7189d2f0309d6295692);
+        
+    
+            var icon_271477f859c055c4b93b5fc817349974 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "black",
+  "iconColor": "white",
+  "icon": "home",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_526c3c8490dcb6cecf83a4ac3a330724 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_11477f9d7db4a2c5ab45bcf736181de5 = $(`<div id="html_11477f9d7db4a2c5ab45bcf736181de5" style="width: 100.0%; height: 100.0%;"><b>Pune Collection Hub</b> (Hub ID: D0)</div>`)[0];
+                popup_526c3c8490dcb6cecf83a4ac3a330724.setContent(html_11477f9d7db4a2c5ab45bcf736181de5);
+            
+        
+
+        marker_b46aba2f613c75b641d3f5ec4ac0a8ed.bindPopup(popup_526c3c8490dcb6cecf83a4ac3a330724)
+        ;
+
+        
+    
+    
+            marker_b46aba2f613c75b641d3f5ec4ac0a8ed.bindTooltip(
+                `<div>
+                     DEPOT: Pune Collection Hub
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_b46aba2f613c75b641d3f5ec4ac0a8ed.setIcon(icon_271477f859c055c4b93b5fc817349974);
+            
+    
+            var marker_30346a4b1911df3da7460687977b30ae = L.marker(
+                [18.5204, 73.8567],
+                {
+}
+            ).addTo(map_274f0722f480a7189d2f0309d6295692);
+        
+    
+            var icon_1fcd754e39dd2a686f1d544235a7c7cc = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "black",
+  "iconColor": "white",
+  "icon": "home",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_2fc750bcf67acd5eeb329770015d6546 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_29d749ac755ddd79e36fb1e0225af93a = $(`<div id="html_29d749ac755ddd79e36fb1e0225af93a" style="width: 100.0%; height: 100.0%;"><b>Pune Collection Hub</b><br/><b>Type:</b> DEPOT<br/><b>Shipment:</b> N/A<br/><b>Arrival:</b> 07:17<br/><b>Vehicle Load:</b> 0.0 kg</div>`)[0];
+                popup_2fc750bcf67acd5eeb329770015d6546.setContent(html_29d749ac755ddd79e36fb1e0225af93a);
+            
+        
+
+        marker_30346a4b1911df3da7460687977b30ae.bindPopup(popup_2fc750bcf67acd5eeb329770015d6546)
+        ;
+
+        
+    
+    
+            marker_30346a4b1911df3da7460687977b30ae.bindTooltip(
+                `<div>
+                     Vehicle V02 - Stop #1 (DEPOT)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_30346a4b1911df3da7460687977b30ae.setIcon(icon_1fcd754e39dd2a686f1d544235a7c7cc);
+            
+    
+            var marker_a9d9f55ccd5cf83df558124a81b6d848 = L.marker(
+                [18.5074, 73.8077],
+                {
+}
+            ).addTo(map_274f0722f480a7189d2f0309d6295692);
+        
+    
+            var icon_01f772c2d46783a43fb2e8314d3d1cdc = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "shopping-cart",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_2277ce7010668294f5c8d03812ebe8da = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_6d6637f4c18a3ac6e7f8a6a3674a9465 = $(`<div id="html_6d6637f4c18a3ac6e7f8a6a3674a9465" style="width: 100.0%; height: 100.0%;"><b>Farmer A (Kothrud) (F01)</b><br/><b>Type:</b> PICKUP<br/><b>Shipment:</b> S03<br/><b>Arrival:</b> 07:25<br/><b>Vehicle Load:</b> 0.0 kg</div>`)[0];
+                popup_2277ce7010668294f5c8d03812ebe8da.setContent(html_6d6637f4c18a3ac6e7f8a6a3674a9465);
+            
+        
+
+        marker_a9d9f55ccd5cf83df558124a81b6d848.bindPopup(popup_2277ce7010668294f5c8d03812ebe8da)
+        ;
+
+        
+    
+    
+            marker_a9d9f55ccd5cf83df558124a81b6d848.bindTooltip(
+                `<div>
+                     Vehicle V02 - Stop #2 (S03_P)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_a9d9f55ccd5cf83df558124a81b6d848.setIcon(icon_01f772c2d46783a43fb2e8314d3d1cdc);
+            
+    
+            var marker_990084be4d616e7f9b25a1f40dc83dec = L.marker(
+                [18.4529, 73.8553],
+                {
+}
+            ).addTo(map_274f0722f480a7189d2f0309d6295692);
+        
+    
+            var icon_7e3855faa3b7fde1188ddc05066c42c0 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "shopping-cart",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_a84cd03a3fb9cde3ebb82833fde1c359 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_8866552e5004b3698ad5cec8d28be934 = $(`<div id="html_8866552e5004b3698ad5cec8d28be934" style="width: 100.0%; height: 100.0%;"><b>Farmer D (Katraj) (F04)</b><br/><b>Type:</b> PICKUP<br/><b>Shipment:</b> S02<br/><b>Arrival:</b> 07:54<br/><b>Vehicle Load:</b> 180.0 kg</div>`)[0];
+                popup_a84cd03a3fb9cde3ebb82833fde1c359.setContent(html_8866552e5004b3698ad5cec8d28be934);
+            
+        
+
+        marker_990084be4d616e7f9b25a1f40dc83dec.bindPopup(popup_a84cd03a3fb9cde3ebb82833fde1c359)
+        ;
+
+        
+    
+    
+            marker_990084be4d616e7f9b25a1f40dc83dec.bindTooltip(
+                `<div>
+                     Vehicle V02 - Stop #3 (S02_P)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_990084be4d616e7f9b25a1f40dc83dec.setIcon(icon_7e3855faa3b7fde1188ddc05066c42c0);
+            
+    
+            var marker_4e2477e28dbcd9455cbcfa64091cc3d4 = L.marker(
+                [18.4529, 73.8553],
+                {
+}
+            ).addTo(map_274f0722f480a7189d2f0309d6295692);
+        
+    
+            var icon_68352e97020d6cc288cc5f127f919633 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "shopping-cart",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_574cf69ece71d64818ef4df7feef9583 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_147aef2ead58af6eab5e826453610ec4 = $(`<div id="html_147aef2ead58af6eab5e826453610ec4" style="width: 100.0%; height: 100.0%;"><b>Farmer D (Katraj) (F04)</b><br/><b>Type:</b> PICKUP<br/><b>Shipment:</b> S01<br/><b>Arrival:</b> 08:09<br/><b>Vehicle Load:</b> 200.0 kg</div>`)[0];
+                popup_574cf69ece71d64818ef4df7feef9583.setContent(html_147aef2ead58af6eab5e826453610ec4);
+            
+        
+
+        marker_4e2477e28dbcd9455cbcfa64091cc3d4.bindPopup(popup_574cf69ece71d64818ef4df7feef9583)
+        ;
+
+        
+    
+    
+            marker_4e2477e28dbcd9455cbcfa64091cc3d4.bindTooltip(
+                `<div>
+                     Vehicle V02 - Stop #4 (S01_P)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_4e2477e28dbcd9455cbcfa64091cc3d4.setIcon(icon_68352e97020d6cc288cc5f127f919633);
+            
+    
+            var marker_20f62493ad4b32c1234e76d6ce10c929 = L.marker(
+                [18.477, 73.89],
+                {
+}
+            ).addTo(map_274f0722f480a7189d2f0309d6295692);
+        
+    
+            var icon_428b53c88c98c742639fc0bad4e03146 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "flag",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_3f5e358c079cf5ac49b2256ac5b59410 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_f0e41e02367f9d5c665352938241ee15 = $(`<div id="html_f0e41e02367f9d5c665352938241ee15" style="width: 100.0%; height: 100.0%;"><b>Retail Aggregator (Bibwewadi) (B03)</b><br/><b>Type:</b> DELIVERY<br/><b>Shipment:</b> S01<br/><b>Arrival:</b> 08:31<br/><b>Vehicle Load:</b> 320.0 kg</div>`)[0];
+                popup_3f5e358c079cf5ac49b2256ac5b59410.setContent(html_f0e41e02367f9d5c665352938241ee15);
+            
+        
+
+        marker_20f62493ad4b32c1234e76d6ce10c929.bindPopup(popup_3f5e358c079cf5ac49b2256ac5b59410)
+        ;
+
+        
+    
+    
+            marker_20f62493ad4b32c1234e76d6ce10c929.bindTooltip(
+                `<div>
+                     Vehicle V02 - Stop #5 (S01_D)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_20f62493ad4b32c1234e76d6ce10c929.setIcon(icon_428b53c88c98c742639fc0bad4e03146);
+            
+    
+            var marker_e475860a376fba52f6376e3396ca00e9 = L.marker(
+                [18.5679, 73.9143],
+                {
+}
+            ).addTo(map_274f0722f480a7189d2f0309d6295692);
+        
+    
+            var icon_59cd4e0602c790c8ea24c3195878acb1 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "flag",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_ab3362e55b94b8ac7c777d721f6bc6d8 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_dbc55b59a4a6abba8245559c83c892dc = $(`<div id="html_dbc55b59a4a6abba8245559c83c892dc" style="width: 100.0%; height: 100.0%;"><b>Wholesale Buyer 1 (Hadapsar) (B01)</b><br/><b>Type:</b> DELIVERY<br/><b>Shipment:</b> S03<br/><b>Arrival:</b> 09:06<br/><b>Vehicle Load:</b> 200.0 kg</div>`)[0];
+                popup_ab3362e55b94b8ac7c777d721f6bc6d8.setContent(html_dbc55b59a4a6abba8245559c83c892dc);
+            
+        
+
+        marker_e475860a376fba52f6376e3396ca00e9.bindPopup(popup_ab3362e55b94b8ac7c777d721f6bc6d8)
+        ;
+
+        
+    
+    
+            marker_e475860a376fba52f6376e3396ca00e9.bindTooltip(
+                `<div>
+                     Vehicle V02 - Stop #6 (S03_D)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_e475860a376fba52f6376e3396ca00e9.setIcon(icon_59cd4e0602c790c8ea24c3195878acb1);
+            
+    
+            var marker_9e9a302a2b690eb542b8eb2cc43cbbaf = L.marker(
+                [18.6298, 73.7997],
+                {
+}
+            ).addTo(map_274f0722f480a7189d2f0309d6295692);
+        
+    
+            var icon_0f3ea90863e8d24c5b977a5a8c19dd47 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "shopping-cart",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_58919b501ec098d9a84265eeca8b1be2 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_10057e94e10849167c6daf7817237d32 = $(`<div id="html_10057e94e10849167c6daf7817237d32" style="width: 100.0%; height: 100.0%;"><b>Farmer C (Chinchwad) (F03)</b><br/><b>Type:</b> PICKUP<br/><b>Shipment:</b> S06<br/><b>Arrival:</b> 09:49<br/><b>Vehicle Load:</b> 20.0 kg</div>`)[0];
+                popup_58919b501ec098d9a84265eeca8b1be2.setContent(html_10057e94e10849167c6daf7817237d32);
+            
+        
+
+        marker_9e9a302a2b690eb542b8eb2cc43cbbaf.bindPopup(popup_58919b501ec098d9a84265eeca8b1be2)
+        ;
+
+        
+    
+    
+            marker_9e9a302a2b690eb542b8eb2cc43cbbaf.bindTooltip(
+                `<div>
+                     Vehicle V02 - Stop #7 (S06_P)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_9e9a302a2b690eb542b8eb2cc43cbbaf.setIcon(icon_0f3ea90863e8d24c5b977a5a8c19dd47);
+            
+    
+            var marker_e5156a2eeb9d7e257db92acdf251405a = L.marker(
+                [18.5913, 73.7389],
+                {
+}
+            ).addTo(map_274f0722f480a7189d2f0309d6295692);
+        
+    
+            var icon_2db47a1660a239dee5e995e6df52049a = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "shopping-cart",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_dcf1a7600f9397dd52fd796e6125bf71 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_dfc600f95274012e6fe1a74cbd644b7f = $(`<div id="html_dfc600f95274012e6fe1a74cbd644b7f" style="width: 100.0%; height: 100.0%;"><b>Farmer B (Hinjewadi) (F02)</b><br/><b>Type:</b> PICKUP<br/><b>Shipment:</b> S04<br/><b>Arrival:</b> 10:15<br/><b>Vehicle Load:</b> 70.0 kg</div>`)[0];
+                popup_dcf1a7600f9397dd52fd796e6125bf71.setContent(html_dfc600f95274012e6fe1a74cbd644b7f);
+            
+        
+
+        marker_e5156a2eeb9d7e257db92acdf251405a.bindPopup(popup_dcf1a7600f9397dd52fd796e6125bf71)
+        ;
+
+        
+    
+    
+            marker_e5156a2eeb9d7e257db92acdf251405a.bindTooltip(
+                `<div>
+                     Vehicle V02 - Stop #8 (S04_P)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_e5156a2eeb9d7e257db92acdf251405a.setIcon(icon_2db47a1660a239dee5e995e6df52049a);
+            
+    
+            var marker_c16ddbcc3457880e5900156792e4e059 = L.marker(
+                [18.5913, 73.7389],
+                {
+}
+            ).addTo(map_274f0722f480a7189d2f0309d6295692);
+        
+    
+            var icon_63af3bde0259387254546ab2674d8fa5 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "shopping-cart",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_b41dbbcbddab82af5c0938f2d25c2ba2 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_5ad43734d33e74de7d98d1eb82fcabf9 = $(`<div id="html_5ad43734d33e74de7d98d1eb82fcabf9" style="width: 100.0%; height: 100.0%;"><b>Farmer B (Hinjewadi) (F02)</b><br/><b>Type:</b> PICKUP<br/><b>Shipment:</b> S05<br/><b>Arrival:</b> 10:30<br/><b>Vehicle Load:</b> 120.0 kg</div>`)[0];
+                popup_b41dbbcbddab82af5c0938f2d25c2ba2.setContent(html_5ad43734d33e74de7d98d1eb82fcabf9);
+            
+        
+
+        marker_c16ddbcc3457880e5900156792e4e059.bindPopup(popup_b41dbbcbddab82af5c0938f2d25c2ba2)
+        ;
+
+        
+    
+    
+            marker_c16ddbcc3457880e5900156792e4e059.bindTooltip(
+                `<div>
+                     Vehicle V02 - Stop #9 (S05_P)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_c16ddbcc3457880e5900156792e4e059.setIcon(icon_63af3bde0259387254546ab2674d8fa5);
+            
+    
+            var marker_790595b45e7e6b01394e353b48211e12 = L.marker(
+                [18.642, 73.761],
+                {
+}
+            ).addTo(map_274f0722f480a7189d2f0309d6295692);
+        
+    
+            var icon_5443bba49981481d13d92ed3f6434560 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "flag",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_c8ffef837fdfcdd07d563b4c3568cc7e = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_a5141004d9558f7249cf356702ba3c91 = $(`<div id="html_a5141004d9558f7249cf356702ba3c91" style="width: 100.0%; height: 100.0%;"><b>Wholesale Buyer 2 (Pimple Saudagar) (B02)</b><br/><b>Type:</b> DELIVERY<br/><b>Shipment:</b> S06<br/><b>Arrival:</b> 10:56<br/><b>Vehicle Load:</b> 290.0 kg</div>`)[0];
+                popup_c8ffef837fdfcdd07d563b4c3568cc7e.setContent(html_a5141004d9558f7249cf356702ba3c91);
+            
+        
+
+        marker_790595b45e7e6b01394e353b48211e12.bindPopup(popup_c8ffef837fdfcdd07d563b4c3568cc7e)
+        ;
+
+        
+    
+    
+            marker_790595b45e7e6b01394e353b48211e12.bindTooltip(
+                `<div>
+                     Vehicle V02 - Stop #10 (S06_D)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_790595b45e7e6b01394e353b48211e12.setIcon(icon_5443bba49981481d13d92ed3f6434560);
+            
+    
+            var marker_27bf2e724808fdf1636ce79725690369 = L.marker(
+                [18.642, 73.761],
+                {
+}
+            ).addTo(map_274f0722f480a7189d2f0309d6295692);
+        
+    
+            var icon_0197884ab445ec38413ba6519828d904 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "flag",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_1e5350b9e9233e9bda209d4a2375a63e = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_f19be453c8b5d9d9ebe26eae774db2e0 = $(`<div id="html_f19be453c8b5d9d9ebe26eae774db2e0" style="width: 100.0%; height: 100.0%;"><b>Wholesale Buyer 2 (Pimple Saudagar) (B02)</b><br/><b>Type:</b> DELIVERY<br/><b>Shipment:</b> S05<br/><b>Arrival:</b> 11:16<br/><b>Vehicle Load:</b> 240.0 kg</div>`)[0];
+                popup_1e5350b9e9233e9bda209d4a2375a63e.setContent(html_f19be453c8b5d9d9ebe26eae774db2e0);
+            
+        
+
+        marker_27bf2e724808fdf1636ce79725690369.bindPopup(popup_1e5350b9e9233e9bda209d4a2375a63e)
+        ;
+
+        
+    
+    
+            marker_27bf2e724808fdf1636ce79725690369.bindTooltip(
+                `<div>
+                     Vehicle V02 - Stop #11 (S05_D)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_27bf2e724808fdf1636ce79725690369.setIcon(icon_0197884ab445ec38413ba6519828d904);
+            
+    
+            var marker_0464b03c198875f4120c019776c9860c = L.marker(
+                [18.5679, 73.9143],
+                {
+}
+            ).addTo(map_274f0722f480a7189d2f0309d6295692);
+        
+    
+            var icon_9b9f496a7a83fd0becdcf4bc147a6019 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "flag",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_970c4d89874dc9e02d1ebc08307a456f = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_eedb23d245e98aeabf81d02469628fb7 = $(`<div id="html_eedb23d245e98aeabf81d02469628fb7" style="width: 100.0%; height: 100.0%;"><b>Wholesale Buyer 1 (Hadapsar) (B01)</b><br/><b>Type:</b> DELIVERY<br/><b>Shipment:</b> S04<br/><b>Arrival:</b> 12:02<br/><b>Vehicle Load:</b> 70.0 kg</div>`)[0];
+                popup_970c4d89874dc9e02d1ebc08307a456f.setContent(html_eedb23d245e98aeabf81d02469628fb7);
+            
+        
+
+        marker_0464b03c198875f4120c019776c9860c.bindPopup(popup_970c4d89874dc9e02d1ebc08307a456f)
+        ;
+
+        
+    
+    
+            marker_0464b03c198875f4120c019776c9860c.bindTooltip(
+                `<div>
+                     Vehicle V02 - Stop #12 (S04_D)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_0464b03c198875f4120c019776c9860c.setIcon(icon_9b9f496a7a83fd0becdcf4bc147a6019);
+            
+    
+            var marker_464abbb8d4ae6908c6e6140a7c6ff338 = L.marker(
+                [18.5679, 73.9143],
+                {
+}
+            ).addTo(map_274f0722f480a7189d2f0309d6295692);
+        
+    
+            var icon_95c340047ddd65ccabc258689c61dd2c = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "flag",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_fb38055d36ad76461558752f08e75ced = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_52fb1d37c5cf33f3bb88b97c8dc86782 = $(`<div id="html_52fb1d37c5cf33f3bb88b97c8dc86782" style="width: 100.0%; height: 100.0%;"><b>Wholesale Buyer 1 (Hadapsar) (B01)</b><br/><b>Type:</b> DELIVERY<br/><b>Shipment:</b> S02<br/><b>Arrival:</b> 12:22<br/><b>Vehicle Load:</b> 20.0 kg</div>`)[0];
+                popup_fb38055d36ad76461558752f08e75ced.setContent(html_52fb1d37c5cf33f3bb88b97c8dc86782);
+            
+        
+
+        marker_464abbb8d4ae6908c6e6140a7c6ff338.bindPopup(popup_fb38055d36ad76461558752f08e75ced)
+        ;
+
+        
+    
+    
+            marker_464abbb8d4ae6908c6e6140a7c6ff338.bindTooltip(
+                `<div>
+                     Vehicle V02 - Stop #13 (S02_D)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_464abbb8d4ae6908c6e6140a7c6ff338.setIcon(icon_95c340047ddd65ccabc258689c61dd2c);
+            
+    
+            var marker_96f4726af172c75be3aac2b72ad59a6d = L.marker(
+                [18.5204, 73.8567],
+                {
+}
+            ).addTo(map_274f0722f480a7189d2f0309d6295692);
+        
+    
+            var icon_3859216023819290f7c74f5cb8906aa5 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "black",
+  "iconColor": "white",
+  "icon": "home",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_da66629127e2f35e0579d2d8faf1f551 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_51d33572814baeda8ca0eba631f387db = $(`<div id="html_51d33572814baeda8ca0eba631f387db" style="width: 100.0%; height: 100.0%;"><b>Pune Collection Hub</b><br/><b>Type:</b> DEPOT<br/><b>Shipment:</b> N/A<br/><b>Arrival:</b> 12:53<br/><b>Vehicle Load:</b> 0.0 kg</div>`)[0];
+                popup_da66629127e2f35e0579d2d8faf1f551.setContent(html_51d33572814baeda8ca0eba631f387db);
+            
+        
+
+        marker_96f4726af172c75be3aac2b72ad59a6d.bindPopup(popup_da66629127e2f35e0579d2d8faf1f551)
+        ;
+
+        
+    
+    
+            marker_96f4726af172c75be3aac2b72ad59a6d.bindTooltip(
+                `<div>
+                     Vehicle V02 - Stop #14 (DEPOT)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_96f4726af172c75be3aac2b72ad59a6d.setIcon(icon_3859216023819290f7c74f5cb8906aa5);
+            
+    
+            var poly_line_fd9fee3966b47fdbd30c5fa8c36441c4 = L.polyline(
+                [[18.5204, 73.8567], [18.5074, 73.8077], [18.4529, 73.8553], [18.4529, 73.8553], [18.477, 73.89], [18.5679, 73.9143], [18.6298, 73.7997], [18.5913, 73.7389], [18.5913, 73.7389], [18.642, 73.761], [18.642, 73.761], [18.5679, 73.9143], [18.5679, 73.9143], [18.5204, 73.8567]],
+                {"bubblingMouseEvents": true, "color": "blue", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "blue", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.8, "smoothFactor": 1.0, "stroke": true, "weight": 5}
+            ).addTo(map_274f0722f480a7189d2f0309d6295692);
+        
+    
+            poly_line_fd9fee3966b47fdbd30c5fa8c36441c4.bindTooltip(
+                `<div>
+                     Route for Vehicle V02 (112.9 km, 126 min)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+</script>
+</html>

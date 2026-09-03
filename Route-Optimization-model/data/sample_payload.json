@@ -1,0 +1,113 @@
+{
+  "depot": {
+    "id": "D0",
+    "name": "Pune Collection Hub",
+    "lat": 18.5204,
+    "lon": 73.8567
+  },
+  "farmers": [
+    {
+      "farmer_id": "F01",
+      "name": "Farmer A (Kothrud)",
+      "lat": 18.5074,
+      "lon": 73.8077,
+      "product": "Tomato",
+      "supply_kg": 180,
+      "pickup_start": "06:00",
+      "pickup_end": "10:00",
+      "service_min": 15
+    },
+    {
+      "farmer_id": "F02",
+      "name": "Farmer B (Hinjewadi)",
+      "lat": 18.5913,
+      "lon": 73.7389,
+      "product": "Tomato",
+      "supply_kg": 220,
+      "pickup_start": "06:00",
+      "pickup_end": "10:30",
+      "service_min": 15
+    },
+    {
+      "farmer_id": "F03",
+      "name": "Farmer C (Chinchwad)",
+      "lat": 18.6298,
+      "lon": 73.7997,
+      "product": "Tomato",
+      "supply_kg": 160,
+      "pickup_start": "06:30",
+      "pickup_end": "11:00",
+      "service_min": 15
+    },
+    {
+      "farmer_id": "F04",
+      "name": "Farmer D (Katraj)",
+      "lat": 18.4529,
+      "lon": 73.8553,
+      "product": "Tomato",
+      "supply_kg": 140,
+      "pickup_start": "06:00",
+      "pickup_end": "09:30",
+      "service_min": 15
+    }
+  ],
+  "buyers": [
+    {
+      "buyer_id": "B01",
+      "name": "Wholesale Buyer 1 (Hadapsar)",
+      "lat": 18.5679,
+      "lon": 73.9143,
+      "product": "Tomato",
+      "demand_kg": 250,
+      "delivery_start": "09:00",
+      "delivery_end": "13:00",
+      "service_min": 20
+    },
+    {
+      "buyer_id": "B02",
+      "name": "Wholesale Buyer 2 (Pimple Saudagar)",
+      "lat": 18.6420,
+      "lon": 73.7610,
+      "product": "Tomato",
+      "demand_kg": 220,
+      "delivery_start": "09:00",
+      "delivery_end": "14:00",
+      "service_min": 20
+    },
+    {
+      "buyer_id": "B03",
+      "name": "Retail Aggregator (Bibwewadi)",
+      "lat": 18.4770,
+      "lon": 73.8900,
+      "product": "Tomato",
+      "demand_kg": 120,
+      "delivery_start": "08:30",
+      "delivery_end": "12:00",
+      "service_min": 20
+    }
+  ],
+  "vehicles": [
+    {
+      "vehicle_id": "V01",
+      "capacity_kg": 350,
+      "max_route_min": 540,
+      "fixed_cost": 300.0
+    },
+    {
+      "vehicle_id": "V02",
+      "capacity_kg": 350,
+      "max_route_min": 540,
+      "fixed_cost": 300.0
+    },
+    {
+      "vehicle_id": "V03",
+      "capacity_kg": 300,
+      "max_route_min": 540,
+      "fixed_cost": 300.0
+    }
+  ],
+  "cost_per_km": 12.0,
+  "cost_per_hour": 80.0,
+  "solver_time_limit_seconds": 10,
+  "use_osrm": true
+}
