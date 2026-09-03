@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ShieldCheck, Mail, Lock, Sprout, ArrowLeft, KeyRound, Truck, Zap } from 'lucide-react';
+import { ShieldCheck, Mail, Lock, Eye, EyeOff, Sprout, ArrowLeft, KeyRound, Truck, Zap } from 'lucide-react';
 import Particle3DCanvas from '../components/Particle3DCanvas';
 
 export default function AdminLoginPage() {
     const navigate = useNavigate();
     const [email, setEmail] = useState('admin@agriconnect.com');
     const [password, setPassword] = useState('admin123');
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleLogin = (e) => {
         if (e) e.preventDefault();
@@ -14,7 +15,7 @@ export default function AdminLoginPage() {
             localStorage.setItem('role', 'logistics');
             navigate('/logistics');
         } else {
-            alert('Invalid Admin Credentials. Please use demo credentials provided.');
+            alert('Invalid Fleet Admin Credentials.');
         }
     };
 
@@ -33,7 +34,7 @@ export default function AdminLoginPage() {
                             <span className="text-xs font-mono">Back to Home</span>
                         </Link>
                         <span className="text-xs font-mono text-[#F97316] bg-orange-500/20 px-2.5 py-0.5 rounded border border-orange-500/30">
-                            Root Fleet
+                            Fleet Command
                         </span>
                     </div>
 
@@ -62,13 +63,20 @@ export default function AdminLoginPage() {
                             <div className="relative">
                                 <Lock className="absolute left-4 top-3.5 text-gray-400" size={18} />
                                 <input
-                                    type="password"
+                                    type={showPassword ? "text" : "password"}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="Password"
-                                    className="w-full pl-11 pr-4 py-3 bg-[#F8FAFC] border border-gray-200 rounded-xl text-sm text-[#0F172A] outline-none focus:border-[#EA580C] focus:bg-white transition"
+                                    className="w-full pl-11 pr-11 py-3 bg-[#F8FAFC] border border-gray-200 rounded-xl text-sm text-[#0F172A] outline-none focus:border-[#EA580C] focus:bg-white transition"
                                     required
                                 />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-700"
+                                >
+                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
                             </div>
 
                             <button
@@ -79,22 +87,22 @@ export default function AdminLoginPage() {
                             </button>
                         </form>
 
-                        {/* Demo Credentials Box */}
+                        {/* Admin Fleet Access Info */}
                         <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-mono space-y-1 text-slate-600">
                             <div className="text-slate-900 font-bold flex items-center justify-between">
                                 <span className="flex items-center gap-1.5">
-                                    <KeyRound size={14} className="text-[#EA580C]" /> Demo Credentials:
+                                    <KeyRound size={14} className="text-[#EA580C]" /> Default Fleet Access:
                                 </span>
                                 <button
                                     type="button"
                                     onClick={handleLogin}
                                     className="text-[10px] bg-orange-100 hover:bg-orange-200 text-orange-800 px-2 py-0.5 rounded font-bold transition flex items-center gap-1"
                                 >
-                                    <Zap size={11} /> 1-Click Login
+                                    <Zap size={11} /> Fast Sign In
                                 </button>
                             </div>
                             <div>Email: <span className="text-slate-900 font-semibold">admin@agriconnect.com</span></div>
-                            <div>Password: <span className="text-slate-900 font-semibold">admin123</span></div>
+                            <div>Password: <span className="text-slate-900 font-semibold">••••••••</span></div>
                         </div>
                     </div>
                 </div>

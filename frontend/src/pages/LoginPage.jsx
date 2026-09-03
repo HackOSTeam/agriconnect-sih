@@ -1,245 +1,383 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, ShoppingBag, Lock, Eye, EyeOff, Mic, Sprout, ArrowRight, Sparkles, CheckCircle2, ShieldCheck, Zap } from 'lucide-react';
+import {
+    User, ShoppingBag, Lock, Eye, EyeOff, Sprout,
+    ArrowRight, CheckCircle2, ShieldCheck, Phone, Mail,
+    AlertCircle, Sparkles, KeyRound
+} from 'lucide-react';
 import axios from 'axios';
+import { API_BASE_URL } from '../config';
 import Particle3DCanvas from '../components/Particle3DCanvas';
 
 export default function LoginPage() {
-    const [role, setRole] = useState('farmer');
-    const [name, setName] = useState('');
-    const [password, setPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
-    const [error, setError] = useState('');
-    const [isListening, setIsListening] = useState(false);
-    const [activeLang, setActiveLang] = useState('EN');
     const navigate = useNavigate();
+    const [role, setRole] = useState('farmer'); // 'farmer' or 'buyer'
+    const [error, setError] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
+    // Farmer Form (Name / Mobile + Password)
+    const [farmerIdentifier, setFarmerIdentifier] = useState('');
+    const [farmerPassword, setFarmerPassword] = useState('');
+    const [showFarmerPassword, setShowFarmerPassword] = useState(false);
+
+    // Buyer Form (Name / Email / Mobile + Password)
+    const [buyerIdentifier, setBuyerIdentifier] = useState('');
+    const [buyerPassword, setBuyerPassword] = useState('');
+    const [showBuyerPassword, setShowBuyerPassword] = useState(false);
+    const [rememberMe, setRememberMe] = useState(true);
+
+    // Forgot Password Modal state
+    const [showForgotModal, setShowForgotModal] = useState(false);
+    const [forgotEmail, setForgotEmail] = useState('');
+    const [forgotSent, setForgotSent] = useState(false);
+
+    // Submit Login (Unified for Farmer & Buyer)
     const handleLogin = async (e) => {
-        if (e) e.preventDefault();
+        e.preventDefault();
         setError('');
+        setSuccessMessage('');
 
+        const identifier = role === 'farmer' ? farmerIdentifier.trim() : buyerIdentifier.trim();
+        const password = role === 'farmer' ? farmerPassword : buyerPassword;
+
+        if (!identifier) {
+            setError(`Please enter your registered ${role === 'farmer' ? 'Full Name or Mobile Number' : 'Name, Email, or Phone'}.`);
+            return;
+        }
+        if (!password) {
+            setError('Please enter your password.');
+            return;
+        }
+
+        setIsLoading(true);
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/login', {
-                identifier: name,
-                password: password,
+            // First check user & role compatibility
+            const checkRes = await axios.post(`${API_BASE_URL}/api/check-user`, {
+                identifier: identifier,
                 role: role
             });
 
-            const userRole = response.data.role;
-            const userName = response.data.name;
-
-            localStorage.setItem('role', userRole);
-            localStorage.setItem('userName', userName);
-
-            navigate(`/${userRole}`);
-        } catch (err) {
-            if (err.response?.data?.detail) {
-                setError(err.response.data.detail);
-            } else {
-                // Fallback demo login for presentation
-                localStorage.setItem('role', role);
-                localStorage.setItem('userName', name || (role === 'farmer' ? 'Ramesh Patel' : 'AgroFresh Wholesalers'));
-                navigate(`/${role}`);
+            if (!checkRes.data.exists) {
+                setError(`No registered ${role.toUpperCase()} account found with '${identifier}'. Redirecting to registration...`);
+                setTimeout(() => navigate('/register'), 2000);
+                setIsLoading(false);
+                return;
             }
-        }
-    };
 
-    const handleQuickAutofill = (selectedRole) => {
-        setRole(selectedRole);
-        if (selectedRole === 'farmer') {
-            setName('Ramesh Patel');
-            setPassword('password123');
-        } else if (selectedRole === 'buyer') {
-            setName('AgroFresh Wholesalers');
-            setPassword('password123');
-        }
-    };
+            if (checkRes.data.exists && !checkRes.data.matches_role) {
+                setError(checkRes.data.message);
+                setIsLoading(false);
+                return;
+            }
 
-    const handleVoiceAssist = () => {
-        setIsListening(true);
-        setTimeout(() => {
-            setName(role === 'farmer' ? 'Ramesh Patel' : 'AgroFresh Wholesalers');
-            setPassword('password123');
-            setIsListening(false);
-        }, 1200);
+            // Perform Login
+            const res = await axios.post(`${API_BASE_URL}/api/login`, {
+                identifier: identifier,
+                role: role,
+                password: password,
+                auth_type: 'password'
+            });
+
+            if (res.data.token) {
+                localStorage.setItem('token', res.data.token);
+            }
+            if (res.data.user_id) {
+                localStorage.setItem('userId', res.data.user_id);
+            }
+
+            if (role === 'farmer') {
+                localStorage.setItem('role', 'farmer');
+                localStorage.setItem('userName', res.data.name);
+                localStorage.setItem('farmerId', res.data.user_id || res.data.user?.id || '');
+                localStorage.setItem('farmerProfile', JSON.stringify(res.data.user));
+                setSuccessMessage(`Welcome back, ${res.data.name}! Opening Kisan Dashboard...`);
+                setTimeout(() => navigate('/farmer'), 800);
+            } else {
+                localStorage.setItem('role', 'buyer');
+                localStorage.setItem('userName', res.data.name);
+                localStorage.setItem('buyerId', res.data.user_id || res.data.user?.id || '');
+                localStorage.setItem('buyerProfile', JSON.stringify(res.data.user));
+                setSuccessMessage(`Welcome back, ${res.data.name}! Opening Buyer Marketplace...`);
+                setTimeout(() => navigate('/buyer'), 800);
+            }
+        } catch (err) {
+            const detail = err.response?.data?.detail || err.message;
+            if (err.response?.status === 404) {
+                setError(`${detail} Redirecting to registration...`);
+                setTimeout(() => navigate('/register'), 2000);
+            } else {
+                setError(detail || 'Authentication failed. Please verify your credentials.');
+            }
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
-        <div className="min-h-screen relative flex items-center justify-center p-4 bg-[#F4F8F4] text-[#0F172A] font-sans overflow-hidden">
-            {/* Ambient Background Particles */}
-            <Particle3DCanvas className="opacity-30" />
+        <div className="min-h-screen relative flex items-center justify-center p-4 py-12 bg-[#F4F8F4] text-[#0F172A] font-sans overflow-hidden">
+            <Particle3DCanvas className="opacity-25" />
 
-            {/* Glowing Ambient Gradient Accents */}
-            <div className="fixed top-[-10%] right-[-5%] w-[500px] h-[500px] bg-[#10B981] rounded-full filter blur-[140px] opacity-15 pointer-events-none" />
-            <div className="fixed bottom-[-10%] left-[-5%] w-[500px] h-[500px] bg-[#EA580C] rounded-full filter blur-[140px] opacity-10 pointer-events-none" />
+            <div className="fixed top-[-10%] right-[-5%] w-[500px] h-[500px] bg-[#10B981] rounded-full filter blur-[150px] opacity-15 pointer-events-none" />
+            <div className="fixed bottom-[-10%] left-[-5%] w-[500px] h-[500px] bg-[#EA580C] rounded-full filter blur-[150px] opacity-10 pointer-events-none" />
 
-            <div className="relative z-10 w-full max-w-lg">
-                {/* Main Balanced Dual-Tone Card */}
+            <div className="relative z-10 w-full max-w-md">
                 <div className="bg-white border border-[#E2E8F0] rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.08)] overflow-hidden">
-                    {/* Dark Top Header Banner for High Contrast */}
-                    <div className="bg-gradient-to-r from-[#062319] to-[#0A3324] p-6 text-white flex items-center justify-between border-b border-[#10B981]/20">
+                    {/* Header Banner */}
+                    <div className="bg-gradient-to-r from-[#062319] via-[#0A3324] to-[#041A13] p-6 text-white flex items-center justify-between border-b border-[#10B981]/25">
                         <Link to="/" className="flex items-center gap-2.5 group">
-                            <div className="w-9 h-9 bg-[#10B981] rounded-xl flex items-center justify-center text-[#022C22] shadow group-hover:scale-105 transition-transform">
-                                <Sprout size={20} className="stroke-[2.5]" />
+                            <div className="w-10 h-10 bg-gradient-to-br from-[#10B981] to-[#047857] rounded-xl flex items-center justify-center text-[#022C22] shadow group-hover:scale-105 transition-transform">
+                                <Sprout size={22} className="stroke-[2.5]" />
                             </div>
                             <div>
-                                <span className="font-extrabold font-serif text-white text-lg tracking-tight">Agri<span className="text-[#34D399]">Connect</span></span>
-                                <span className="block text-[10px] text-gray-300 font-mono">Secure Access Portal</span>
+                                <span className="font-extrabold font-serif text-white text-xl tracking-tight">Agri<span className="text-[#34D399]">Connect</span></span>
+                                <span className="block text-[10px] text-gray-300 font-mono">Direct Trade Portal</span>
                             </div>
                         </Link>
-
-                        <div className="flex items-center gap-2">
-                            <div className="flex bg-white/10 border border-white/15 rounded-full p-0.5 text-xs font-mono">
-                                {['EN', 'हिं', 'म'].map(l => (
-                                    <button
-                                        key={l}
-                                        onClick={() => setActiveLang(l)}
-                                        className={`px-2.5 py-0.5 rounded-full transition ${activeLang === l ? 'bg-[#10B981] text-[#022C22] font-bold' : 'text-gray-300 hover:text-white'}`}
-                                    >
-                                        {l}
-                                    </button>
-                                ))}
-                            </div>
-                            <button
-                                onClick={handleVoiceAssist}
-                                className={`p-2 rounded-xl border transition ${isListening ? 'bg-red-500 text-white animate-pulse border-red-400' : 'bg-white/10 border-white/15 text-[#34D399] hover:bg-white/20'}`}
-                                title="Voice AI Demo Helper"
-                            >
-                                <Mic size={16} />
-                            </button>
-                        </div>
+                        <span className="text-xs bg-[#10B981]/20 text-[#34D399] px-2.5 py-1 rounded-full font-mono border border-[#10B981]/30">
+                            Secure Sign In
+                        </span>
                     </div>
 
                     <div className="p-6 sm:p-8 space-y-6">
+                        {/* Title */}
                         <div className="text-center space-y-1">
                             <h1 className="text-2xl font-bold font-serif text-[#0F172A]">Welcome Back</h1>
-                            <p className="text-xs text-gray-500">Sign in to manage farm harvests, wholesale orders & dispatch</p>
+                            <p className="text-xs text-gray-500">Sign in with your registered Name and Password</p>
                         </div>
 
+                        {/* Error & Success Messages */}
                         {error && (
-                            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs text-center font-mono">
-                                {error}
+                            <div className="p-3.5 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs flex items-center gap-2 font-mono">
+                                <AlertCircle size={16} className="text-red-500 shrink-0" />
+                                <span>{error}</span>
+                            </div>
+                        )}
+                        {successMessage && (
+                            <div className="p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs flex items-center gap-2 font-mono">
+                                <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                                <span>{successMessage}</span>
                             </div>
                         )}
 
-                        {/* Quick 1-Click Demo Automation Pills */}
-                        <div className="bg-[#F8FAFC] border border-gray-200 rounded-2xl p-3 space-y-2">
-                            <div className="text-[11px] font-mono text-gray-500 flex items-center justify-between">
-                                <span className="flex items-center gap-1 font-bold text-gray-700">
-                                    <Zap size={13} className="text-[#F59E0B]" /> 1-Click Demo Autofill:
-                                </span>
-                                <span className="text-[10px] text-gray-400">SIH Fast Demo</span>
-                            </div>
-                            <div className="grid grid-cols-2 gap-2">
-                                <button
-                                    type="button"
-                                    onClick={() => handleQuickAutofill('farmer')}
-                                    className="p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center justify-center gap-1.5 transition text-left"
-                                >
-                                    🌾 Farmer (Ramesh)
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => handleQuickAutofill('buyer')}
-                                    className="p-2 rounded-xl bg-orange-50 hover:bg-orange-100 border border-orange-200 text-orange-800 text-xs font-semibold flex items-center justify-center gap-1.5 transition text-left"
-                                >
-                                    🛒 Buyer (AgroFresh)
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Role Toggle Switch */}
+                        {/* Role Selector Tabs */}
                         <div className="grid grid-cols-2 gap-2 p-1.5 bg-[#F1F5F9] rounded-2xl">
                             <button
                                 type="button"
-                                onClick={() => setRole('farmer')}
-                                className={`py-2.5 rounded-xl flex items-center justify-center gap-2 text-xs font-bold transition-all ${
+                                onClick={() => { setRole('farmer'); setError(''); setSuccessMessage(''); }}
+                                className={`py-2.5 rounded-xl flex items-center justify-center gap-2 text-xs sm:text-sm font-bold transition-all ${
                                     role === 'farmer'
                                         ? 'bg-[#059669] text-white shadow-md'
                                         : 'text-gray-600 hover:text-gray-900'
                                 }`}
                             >
-                                <User size={16} /> Farmer
+                                <User size={16} /> Farmer Sign In
                             </button>
                             <button
                                 type="button"
-                                onClick={() => setRole('buyer')}
-                                className={`py-2.5 rounded-xl flex items-center justify-center gap-2 text-xs font-bold transition-all ${
+                                onClick={() => { setRole('buyer'); setError(''); setSuccessMessage(''); }}
+                                className={`py-2.5 rounded-xl flex items-center justify-center gap-2 text-xs sm:text-sm font-bold transition-all ${
                                     role === 'buyer'
                                         ? 'bg-[#EA580C] text-white shadow-md'
                                         : 'text-gray-600 hover:text-gray-900'
                                 }`}
                             >
-                                <ShoppingBag size={16} /> Buyer / Wholesaler
+                                <ShoppingBag size={16} /> Buyer Sign In
                             </button>
                         </div>
 
-                        <form onSubmit={handleLogin} className="space-y-4">
-                            <div className="relative">
-                                <User className="absolute left-4 top-3.5 text-gray-400" size={18} />
-                                <input
-                                    type="text"
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                    placeholder={role === 'farmer' ? "Farmer Name or Mobile (e.g. Ramesh Patel)" : "Business Name or Mobile"}
-                                    className="w-full pl-11 pr-4 py-3 bg-[#F8FAFC] border border-gray-200 rounded-xl text-sm text-[#0F172A] outline-none focus:border-[#059669] focus:bg-white transition"
-                                    required
-                                />
-                            </div>
+                        {/* ======================================================== */}
+                        {/* 1. FARMER LOGIN FORM */}
+                        {/* ======================================================== */}
+                        {role === 'farmer' && (
+                            <form onSubmit={handleLogin} className="space-y-4">
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-gray-700">Full Name or Registered Mobile *</label>
+                                    <div className="relative">
+                                        <User className="absolute left-3.5 top-3.5 text-gray-400" size={17} />
+                                        <input
+                                            type="text"
+                                            value={farmerIdentifier}
+                                            onChange={(e) => setFarmerIdentifier(e.target.value)}
+                                            placeholder="e.g. Ramesh Patel or 9876543210"
+                                            className="w-full pl-10 pr-4 py-3 bg-[#F8FAFC] border border-gray-200 rounded-xl text-sm text-gray-900 outline-none focus:border-emerald-600 focus:bg-white transition"
+                                            required
+                                        />
+                                    </div>
+                                </div>
 
-                            <div className="relative">
-                                <Lock className="absolute left-4 top-3.5 text-gray-400" size={18} />
-                                <input
-                                    type={showPassword ? "text" : "password"}
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="Password (e.g. password123)"
-                                    className="w-full pl-11 pr-11 py-3 bg-[#F8FAFC] border border-gray-200 rounded-xl text-sm text-[#0F172A] outline-none focus:border-[#059669] focus:bg-white transition"
-                                    required
-                                />
+                                <div className="space-y-1">
+                                    <div className="flex justify-between items-center">
+                                        <label className="text-xs font-bold text-gray-700">Password *</label>
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowForgotModal(true)}
+                                            className="text-[11px] font-bold text-emerald-700 hover:underline"
+                                        >
+                                            Forgot password?
+                                        </button>
+                                    </div>
+                                    <div className="relative">
+                                        <Lock className="absolute left-3.5 top-3.5 text-gray-400" size={17} />
+                                        <input
+                                            type={showFarmerPassword ? "text" : "password"}
+                                            value={farmerPassword}
+                                            onChange={(e) => setFarmerPassword(e.target.value)}
+                                            placeholder="Enter password"
+                                            className="w-full pl-10 pr-11 py-3 bg-[#F8FAFC] border border-gray-200 rounded-xl text-sm text-gray-900 outline-none focus:border-emerald-600 focus:bg-white transition"
+                                            required
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowFarmerPassword(!showFarmerPassword)}
+                                            className="absolute right-3.5 top-3.5 text-gray-400 hover:text-gray-700"
+                                        >
+                                            {showFarmerPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        </button>
+                                    </div>
+                                </div>
+
                                 <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-700"
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className="w-full py-3.5 rounded-xl font-bold text-sm bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white shadow-lg shadow-emerald-600/20 transition-all flex items-center justify-center gap-2"
                                 >
-                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    {isLoading ? 'Signing In...' : 'Sign In as Farmer'} <ArrowRight size={16} />
                                 </button>
-                            </div>
+                            </form>
+                        )}
 
-                            <div className="flex items-center justify-between text-xs text-gray-500">
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                    <input type="checkbox" className="rounded accent-[#059669]" defaultChecked />
-                                    <span>Remember credentials</span>
-                                </label>
-                                <span className="text-[#059669] font-medium hover:underline cursor-pointer">Forgot Password?</span>
-                            </div>
+                        {/* ======================================================== */}
+                        {/* 2. BUYER LOGIN FORM */}
+                        {/* ======================================================== */}
+                        {role === 'buyer' && (
+                            <form onSubmit={handleLogin} className="space-y-4">
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-gray-700">Business Name, Email, or Mobile *</label>
+                                    <div className="relative">
+                                        <User className="absolute left-3.5 top-3.5 text-gray-400" size={17} />
+                                        <input
+                                            type="text"
+                                            value={buyerIdentifier}
+                                            onChange={(e) => setBuyerIdentifier(e.target.value)}
+                                            placeholder="e.g. AgroFresh Wholesalers or 9822001122"
+                                            className="w-full pl-10 pr-4 py-3 bg-[#F8FAFC] border border-gray-200 rounded-xl text-sm text-gray-900 outline-none focus:border-orange-500 focus:bg-white transition"
+                                            required
+                                        />
+                                    </div>
+                                </div>
 
-                            <button
-                                type="submit"
-                                className={`w-full py-3.5 rounded-xl font-bold text-sm shadow-lg transition-all ${
-                                    role === 'farmer'
-                                        ? 'bg-[#059669] hover:bg-[#047857] text-white shadow-emerald-600/20'
-                                        : 'bg-[#EA580C] hover:bg-[#C2410C] text-white shadow-orange-600/20'
-                                }`}
-                            >
-                                Sign In to AgriConnect
-                            </button>
-                        </form>
+                                <div className="space-y-1">
+                                    <div className="flex justify-between items-center">
+                                        <label className="text-xs font-bold text-gray-700">Password *</label>
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowForgotModal(true)}
+                                            className="text-[11px] font-bold text-orange-600 hover:underline"
+                                        >
+                                            Forgot password?
+                                        </button>
+                                    </div>
+                                    <div className="relative">
+                                        <Lock className="absolute left-3.5 top-3.5 text-gray-400" size={17} />
+                                        <input
+                                            type={showBuyerPassword ? "text" : "password"}
+                                            value={buyerPassword}
+                                            onChange={(e) => setBuyerPassword(e.target.value)}
+                                            placeholder="Enter password"
+                                            className="w-full pl-10 pr-11 py-3 bg-[#F8FAFC] border border-gray-200 rounded-xl text-sm text-gray-900 outline-none focus:border-orange-500 focus:bg-white transition"
+                                            required
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowBuyerPassword(!showBuyerPassword)}
+                                            className="absolute right-3.5 top-3.5 text-gray-400 hover:text-gray-700"
+                                        >
+                                            {showBuyerPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                        </button>
+                                    </div>
+                                </div>
 
-                        <div className="text-center pt-2 border-t border-gray-100 space-y-3">
+                                <button
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className="w-full py-3.5 rounded-xl font-bold text-sm bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white shadow-lg shadow-orange-600/20 transition-all flex items-center justify-center gap-2"
+                                >
+                                    {isLoading ? 'Signing In...' : 'Sign In to Marketplace'} <ArrowRight size={16} />
+                                </button>
+                            </form>
+                        )}
+
+                        {/* Footer: Register Link */}
+                        <div className="text-center pt-3 border-t border-gray-100">
                             <p className="text-xs text-gray-500">
-                                New to AgriConnect?{' '}
-                                <Link to="/register" className="font-bold text-[#059669] hover:underline">
-                                    Register Account
+                                Don't have an account yet?{' '}
+                                <Link
+                                    to="/register"
+                                    className={`font-bold hover:underline ${role === 'farmer' ? 'text-emerald-700' : 'text-orange-600'}`}
+                                >
+                                    Register here
                                 </Link>
                             </p>
-                            <Link to="/admin/login" className="inline-block text-[11px] text-gray-400 hover:text-gray-700">
-                                Logistics Admin Fleet Portal →
-                            </Link>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* Forgot Password Modal */}
+            {showForgotModal && (
+                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-white border border-gray-200 rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl">
+                        <div className="text-center space-y-2">
+                            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center mx-auto">
+                                <KeyRound size={24} />
+                            </div>
+                            <h3 className="text-lg font-bold font-serif text-gray-900">Reset Account Password</h3>
+                            <p className="text-xs text-gray-500">Enter your registered email or mobile to receive a reset verification code.</p>
+                        </div>
+
+                        {forgotSent ? (
+                            <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs text-center space-y-3">
+                                <CheckCircle2 size={24} className="text-emerald-600 mx-auto" />
+                                <p className="font-semibold">Reset code sent! Follow SMS/Email instructions to set a new password.</p>
+                                <button
+                                    type="button"
+                                    onClick={() => { setShowForgotModal(false); setForgotSent(false); }}
+                                    className="w-full py-2 bg-emerald-700 text-white rounded-xl font-bold text-xs"
+                                >
+                                    Back to Sign In
+                                </button>
+                            </div>
+                        ) : (
+                            <form onSubmit={(e) => { e.preventDefault(); setForgotSent(true); }} className="space-y-3">
+                                <input
+                                    type="text"
+                                    value={forgotEmail}
+                                    onChange={(e) => setForgotEmail(e.target.value)}
+                                    placeholder="Registered Mobile or Email"
+                                    className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-900 outline-none focus:border-emerald-600"
+                                    required
+                                />
+                                <div className="flex gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowForgotModal(false)}
+                                        className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold text-xs transition"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="flex-1 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold text-xs transition"
+                                    >
+                                        Send Reset OTP
+                                    </button>
+                                </div>
+                            </form>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

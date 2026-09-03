@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
+import { API_BASE_URL } from '../config';
 import {
     Sprout, BarChart3, Truck, Languages, ShoppingBag,
     MapPin, MessageCircle, Camera, TrendingUp, CheckCircle2,
@@ -15,7 +17,7 @@ const LANGS = [
     { code: 'hi', name: 'हिंदी', greeting: 'खेत से सीधे मंडी, बिना बिचौलियों के' },
     { code: 'mr', name: 'मराठी', greeting: 'शेतकऱ्यांचा थेट व्यापार, जास्त नफा' },
     { code: 'ta', name: 'தமிழ்', greeting: 'விவசாயிகளிடமிருந்து நேரடியாக நியாயமான விலையில்' },
-    { code: 'te', name: 'తెలుగు', greeting: 'రైతుల నుండి నేరుగా ఉత్తమ ధరలకు' },
+    { code: 'te', name: 'తెలుగు', greeting: 'రైతుల నుండి నేरुగా ఉత్తమ ధరలకు' },
     { code: 'bn', name: 'বাংলা', greeting: 'কৃষকের সরাসরি ফসল, সঠিক মূল্যে' },
 ];
 
@@ -34,6 +36,25 @@ export default function LandingPage() {
     const [selectedCropIndex, setSelectedCropIndex] = useState(0);
     const [forecastDay, setForecastDay] = useState(3);
     const [routeProgress, setRouteProgress] = useState(35);
+
+    const [liveStats, setLiveStats] = useState({
+        total_active_farmers_display: '12,450+ Active Farmers',
+        buyers_online_display: '4,120 Buyers Online',
+        total_products_display: '820 Lots Listed',
+        avg_mandi_saving: '+32.8%'
+    });
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const res = await axios.get(`${API_BASE_URL}/api/stats/overview`);
+                if (res.data) setLiveStats(res.data);
+            } catch (err) {
+                console.error("Error fetching overview stats:", err);
+            }
+        };
+        fetchStats();
+    }, []);
 
     // Automated Route Simulation
     useEffect(() => {
@@ -72,14 +93,14 @@ export default function LandingPage() {
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-[#10B981]"></span>
                     </span>
                     <span className="text-[#A7F3D0] font-semibold">LIVE AGRI-NETWORK:</span>
-                    <span className="text-gray-300">12,450+ Active Farmers</span>
+                    <span className="text-gray-300">{liveStats.total_active_farmers_display}</span>
                     <span className="text-gray-600">•</span>
-                    <span className="text-gray-300">4,120 Buyers Online</span>
+                    <span className="text-gray-300">{liveStats.buyers_online_display}</span>
                     <span className="text-gray-600">•</span>
-                    <span className="text-[#34D399] font-bold">Avg Mandi Saving: +32.8%</span>
+                    <span className="text-[#34D399] font-bold">Avg Mandi Saving: {liveStats.avg_mandi_saving}</span>
                 </div>
                 <div className="flex items-center gap-3">
-                    <span className="bg-emerald-500/20 text-emerald-300 px-2.5 py-0.5 rounded-full border border-emerald-600/40 font-bold">For farmers welfare</span>
+                    <span className="bg-emerald-500/20 text-emerald-300 px-2.5 py-0.5 rounded-full border border-emerald-600/40 font-bold">National Farmer Welfare</span>
                 </div>
             </div>
 
@@ -93,7 +114,7 @@ export default function LandingPage() {
                         <span className="text-xl font-extrabold tracking-tight text-[#0F172A] font-serif">
                             Agri<span className="text-[#059669]">Connect</span>
                         </span>
-                        <span className="hidden md:block text-[10px] text-gray-400 font-mono -mt-0.5">Smart India Hackathon Project</span>
+                        <span className="hidden md:block text-[10px] text-gray-400 font-mono -mt-0.5">Direct Farm-to-Buyer Ecosystem</span>
                     </div>
                 </Link>
 
@@ -709,7 +730,7 @@ export default function LandingPage() {
                             Direct Agricultural Trade, AI Quality Verification & Smart Logistics Network for Bharat.
                         </p>
                         <div className="text-xs font-mono text-[#34D399]">
-                            Smart India Hackathon 2024 / 2026 Initiative
+                            Direct Agricultural Trade Initiative
                         </div>
                     </div>
 
@@ -724,29 +745,29 @@ export default function LandingPage() {
                     </div>
 
                     <div>
-                        <h4 className="font-bold text-white mb-4 text-sm font-mono tracking-wider">TEAM</h4>
+                        <h4 className="font-bold text-white mb-4 text-sm font-mono tracking-wider">ECOSYSTEM</h4>
                         <ul className="space-y-2 text-sm text-gray-400 font-mono text-xs">
-                            <li>• HackOS Team Lead</li>
-                            <li>• AI & Computer Vision Dev</li>
-                            <li>• Backend & Logistics Architect</li>
-                            <li>• Product & Frontend Designer</li>
+                            <li>• AI Vision Quality Grading</li>
+                            <li>• Dynamic Mandi Price Engine</li>
+                            <li>• Farm-Gate Pooled Logistics</li>
+                            <li>• Zero-Broker Escrow Payouts</li>
                         </ul>
                     </div>
 
                     <div>
                         <h4 className="font-bold text-white mb-4 text-sm font-mono tracking-wider">CONTACT</h4>
-                        <p className="text-sm text-gray-400">Smart India Hackathon</p>
-                        <p className="text-[#34D399] font-medium text-sm mt-1">contact@agriconnect.gov.in</p>
+                        <p className="text-sm text-gray-400">AgriConnect Network Support</p>
+                        <p className="text-[#34D399] font-medium text-sm mt-1">support@agriconnect.org.in</p>
                         <div className="mt-4 flex gap-2">
                             <Link to="/register" className="bg-[#10B981]/20 text-[#34D399] px-4 py-2 rounded-xl text-xs font-bold border border-[#10B981]/30 hover:bg-[#10B981]/30 transition">
-                                Start Free Trial
+                                Register on Platform
                             </Link>
                         </div>
                     </div>
                 </div>
 
                 <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row justify-between items-center text-xs text-gray-500 gap-4">
-                    <p>© {new Date().getFullYear()} AgriConnect. Open Source & Built for SIH.</p>
+                    <p>© {new Date().getFullYear()} AgriConnect. Empowering Bharat's Agricultural Direct Trade.</p>
                     <div className="flex gap-6">
                         <span className="hover:text-gray-400 cursor-pointer">Privacy Policy</span>
                         <span className="hover:text-gray-400 cursor-pointer">Terms of Service</span>
