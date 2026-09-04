@@ -40,7 +40,6 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 models.Base.metadata.create_all(bind=database.engine)
 
 # --- BULLETPROOF DATABASE MIGRATION SCRIPT ---
-# This automatically adds missing columns to old databases to prevent 500 CORS crashes
 def ensure_columns():
     db = database.SessionLocal()
     try:
@@ -55,7 +54,24 @@ def ensure_columns():
             "account_holder_name": "TEXT", "account_number": "TEXT", "ifsc_code": "TEXT", "bank_name": "TEXT", "branch_name": "TEXT",
             "account_type": "TEXT", "gstin": "TEXT", "contact_person": "TEXT", "business_type": "TEXT", "business_address": "TEXT",
             "delivery_address": "TEXT", "monthly_volume": "TEXT", "preferred_crops": "TEXT", "business_doc_url": "TEXT",
-            "created_at": "DATETIME", "last_active_at": "DATETIME"
+            "created_at": "DATETIME", "last_active_at": "DATETIME",
+            "account_category": "TEXT", 
+            "company_name": "TEXT", 
+            "driving_license": "TEXT",
+            "vehicle_type": "TEXT", 
+            "num_vehicles": "INTEGER", 
+            "load_capacity": "TEXT",
+            "has_cold_storage": "TEXT DEFAULT 'No'", 
+            "vehicle_reg_number": "TEXT",
+            "insurance_validity": "TEXT", 
+            "operating_region": "TEXT", 
+            "availability_schedule": "TEXT",
+            "service_radius": "TEXT", 
+            "rate_per_km": "FLOAT", 
+            "rating": "FLOAT DEFAULT 5.0",
+            "trips_completed": "INTEGER DEFAULT 0",
+            "vehicles_json": "TEXT", 
+            "license_doc_url": "TEXT"
         }
         for col_name, col_type in needed_user_cols.items():
             if col_name not in user_cols:
@@ -153,6 +169,7 @@ class BuyerRegisterRequest(BaseModel):
     monthly_volume: Optional[str] = None; upi_id: Optional[str] = None; account_holder_name: Optional[str] = None
     account_number: Optional[str] = None; ifsc_code: Optional[str] = None; bank_name: Optional[str] = None
     branch_name: Optional[str] = None; account_type_bank: Optional[str] = "Current"
+
 class UniversalLoginRequest(BaseModel): identifier: str; role: str; password: Optional[str] = None; auth_type: Optional[str] = "password"; otp: Optional[str] = None
 class WithdrawalRequest(BaseModel): user_name: str; amount: float
 class CartAddRequest(BaseModel): buyer_name: str; product_id: int; quantity_kg: float; cancellation_window_hours: Optional[int] = 24
@@ -229,6 +246,69 @@ def register_buyer(data: BuyerRegisterRequest, db: Session = Depends(get_db)):
     token = create_access_token(new_user.id, new_user.role, new_user.name)
     return {"message": "Registered successfully!", "token": token, "user_id": new_user.id, "name": new_user.name, "role": new_user.role, "profile": {"id": new_user.id, "name": new_user.name, "mobile": new_user.mobile, "email": new_user.email, "role": new_user.role, "sub_role": new_user.sub_role, "gstin": new_user.gstin, "business_type": new_user.business_type, "delivery_address": new_user.delivery_address, "monthly_volume": new_user.monthly_volume, "upi_id": new_user.upi_id, "account_holder_name": new_user.account_holder_name, "account_number": new_user.account_number, "ifsc_code": new_user.ifsc_code, "bank_name": new_user.bank_name, "branch_name": new_user.branch_name, "account_type": new_user.account_type}}
 
+# --- BULLETPROOF LOGISTICS REGISTRATION ---
+@app.post("/api/register/logistics")
+async def register_logistics(
+    name: str = Form(...),
+    mobile: str = Form(...),
+    password: str = Form(...),
+    account_category: str = Form("individual_driver"),
+    company_name: str = Form(""),
+    id_type: str = Form("Aadhaar"),
+    id_number: str = Form(""),
+    driving_license: str = Form(""),
+    operating_region: str = Form(""),
+    availability_schedule: str = Form(""),
+    service_radius: str = Form(""),
+    rate_per_km: str = Form("0"), # FIXED: Changed to str so it doesn't crash on empty input
+    vehicles_data: str = Form("[]"),
+    license_photo: UploadFile = File(None), 
+    front_photos: List[UploadFile] = File([]), 
+    back_photos: List[UploadFile] = File([]),   
+    db: Session = Depends(get_db)
+):
+    clean_mobile = mobile.strip()
+    clean_name = name.strip()
+    if len(clean_mobile) != 10 or not clean_mobile.isdigit(): raise HTTPException(status_code=400, detail="Phone number must be exactly 10 digits.")
+    if not password or len(password) < 4: raise HTTPException(status_code=400, detail="Password must be at least 4 characters.")
+    
+    existing = db.query(models.User).filter(or_(models.User.mobile == clean_mobile, models.User.name.ilike(clean_name))).first()
+    if existing: raise HTTPException(status_code=400, detail="Account already exists.")
+    
+    license_url = None
+    if license_photo and license_photo.filename:
+        safe_lic = f"lic_{int(datetime.utcnow().timestamp())}_{license_photo.filename}"
+        with open(f"uploads/{safe_lic}", "wb") as buffer: shutil.copyfileobj(license_photo.file, buffer)
+        license_url = f"http://127.0.0.1:8000/uploads/{safe_lic}"
+
+    vehicles_list = json.loads(vehicles_data) if vehicles_data else []
+    for i, vehicle in enumerate(vehicles_list):
+        if i < len(front_photos) and front_photos[i] and front_photos[i].filename:
+            safe_front = f"veh_front_{int(datetime.utcnow().timestamp())}_{i}_{front_photos[i].filename}"
+            with open(f"uploads/{safe_front}", "wb") as buffer: shutil.copyfileobj(front_photos[i].file, buffer)
+            vehicle["front_photo_url"] = f"http://127.0.0.1:8000/uploads/{safe_front}"
+            
+        if i < len(back_photos) and back_photos[i] and back_photos[i].filename:
+            safe_back = f"veh_back_{int(datetime.utcnow().timestamp())}_{i}_{back_photos[i].filename}"
+            with open(f"uploads/{safe_back}", "wb") as buffer: shutil.copyfileobj(back_photos[i].file, buffer)
+            vehicle["back_photo_url"] = f"http://127.0.0.1:8000/uploads/{safe_back}"
+
+    # Safely convert rate_per_km to float
+    try:
+        rate_float = float(rate_per_km)
+    except:
+        rate_float = 0.0
+
+    new_user = models.User(
+        role="logistics", sub_role=account_category, name=clean_name, mobile=clean_mobile, password=password,
+        account_category=account_category, company_name=company_name, id_type=id_type, id_number=id_number,
+        driving_license=driving_license, operating_region=operating_region, availability_schedule=availability_schedule,
+        service_radius=service_radius, rate_per_km=rate_float, license_doc_url=license_url, 
+        vehicles_json=json.dumps(vehicles_list), status="active"
+    )
+    db.add(new_user); db.commit(); db.refresh(new_user)
+    token = create_access_token(new_user.id, new_user.role, new_user.name)
+    return {"message": "Logistics partner registered successfully!", "token": token, "user_id": new_user.id, "name": new_user.name, "role": new_user.role}
 @app.post("/api/login")
 def login(req: UniversalLoginRequest, db: Session = Depends(get_db)):
     ident = req.identifier.strip(); target_role = req.role.strip().lower()
@@ -242,14 +322,38 @@ def login(req: UniversalLoginRequest, db: Session = Depends(get_db)):
         if db_user.password != req.password: raise HTTPException(status_code=401, detail="Incorrect password.")
     db_user.last_active_at = datetime.utcnow(); db.commit()
     token = create_access_token(db_user.id, db_user.role, db_user.name)
-    return {"message": "Login successful", "token": token, "role": db_user.role, "sub_role": db_user.sub_role, "name": db_user.name, "user_id": db_user.id, "user": {"id": db_user.id, "name": db_user.name, "mobile": db_user.mobile, "email": db_user.email, "role": db_user.role, "sub_role": db_user.sub_role, "village_district": db_user.village_district, "state": db_user.state, "id_type": db_user.id_type, "id_number": db_user.id_number, "primary_crops": db_user.primary_crops, "upi_id": db_user.upi_id, "account_holder_name": db_user.account_holder_name, "account_number": db_user.account_number, "ifsc_code": db_user.ifsc_code, "bank_name": db_user.bank_name, "branch_name": db_user.branch_name, "account_type": db_user.account_type, "gstin": db_user.gstin, "business_type": db_user.business_type, "delivery_address": db_user.delivery_address, "monthly_volume": db_user.monthly_volume, "preferred_crops": db_user.preferred_crops}}
+    return {
+        "message": "Login successful", "token": token, "role": db_user.role, "sub_role": db_user.sub_role, "name": db_user.name, "user_id": db_user.id,
+        "user": {
+            "id": db_user.id, "name": db_user.name, "mobile": db_user.mobile, "email": db_user.email, "role": db_user.role, "sub_role": db_user.sub_role,
+            "village_district": db_user.village_district, "state": db_user.state, "id_type": db_user.id_type, "id_number": db_user.id_number,
+            "primary_crops": db_user.primary_crops, "upi_id": db_user.upi_id, "account_holder_name": db_user.account_holder_name, "account_number": db_user.account_number,
+            "ifsc_code": db_user.ifsc_code, "bank_name": db_user.bank_name, "branch_name": db_user.branch_name, "account_type": db_user.account_type, 
+            "gstin": db_user.gstin, "business_type": db_user.business_type, "delivery_address": db_user.delivery_address, "monthly_volume": db_user.monthly_volume, "preferred_crops": db_user.preferred_crops,
+            # NEW LOGISTICS FIELDS PASSED TO FRONTEND ON LOGIN
+            "vehicles_json": db_user.vehicles_json, "license_doc_url": db_user.license_doc_url, 
+            "operating_region": db_user.operating_region, "availability_schedule": db_user.availability_schedule,
+            "service_radius": db_user.service_radius, "rate_per_km": db_user.rate_per_km, "trips_completed": db_user.trips_completed
+        }
+    }
 
 @app.get("/api/user/profile")
 def get_user_profile(identifier: str = Query(...), db: Session = Depends(get_db)):
     ident = identifier.strip()
     user = db.query(models.User).filter(or_(models.User.name.ilike(ident), models.User.mobile == ident, models.User.email.ilike(ident))).first()
     if not user: raise HTTPException(status_code=404, detail="User profile not found")
-    return {"id": user.id, "name": user.name, "mobile": user.mobile, "email": user.email, "role": user.role, "sub_role": user.sub_role, "language": user.language, "fpo_name": user.fpo_name, "fpo_reg_id": user.fpo_reg_id, "village_district": user.village_district, "state": user.state, "id_type": user.id_type, "id_number": user.id_number, "primary_crops": user.primary_crops, "upi_id": user.upi_id, "account_holder_name": user.account_holder_name, "account_number": user.account_number, "ifsc_code": user.ifsc_code, "bank_name": user.bank_name, "branch_name": user.branch_name, "account_type": user.account_type, "gstin": user.gstin, "contact_person": user.contact_person, "business_type": user.business_type, "business_address": user.business_address, "delivery_address": user.delivery_address, "monthly_volume": user.monthly_volume, "preferred_crops": user.preferred_crops}
+    return {
+        "id": user.id, "name": user.name, "mobile": user.mobile, "email": user.email, "role": user.role, "sub_role": user.sub_role, "language": user.language, 
+        "fpo_name": user.fpo_name, "fpo_reg_id": user.fpo_reg_id, "village_district": user.village_district, "state": user.state, "id_type": user.id_type, "id_number": user.id_number, 
+        "primary_crops": user.primary_crops, "upi_id": user.upi_id, "account_holder_name": user.account_holder_name, "account_number": user.account_number, "ifsc_code": user.ifsc_code, 
+        "bank_name": user.bank_name, "branch_name": user.branch_name, "account_type": user.account_type, "gstin": user.gstin, "contact_person": user.contact_person, "business_type": user.business_type, 
+        "business_address": user.business_address, "delivery_address": user.delivery_address, "monthly_volume": user.monthly_volume, "preferred_crops": user.preferred_crops,
+        # NEW LOGISTICS FIELDS PASSED TO DASHBOARD PROFILE
+        "vehicles_json": user.vehicles_json, "license_doc_url": user.license_doc_url, 
+        "operating_region": user.operating_region, "availability_schedule": user.availability_schedule,
+        "service_radius": user.service_radius, "rate_per_km": user.rate_per_km, "trips_completed": user.trips_completed,
+        "account_category": user.account_category, "driving_license": user.driving_license
+    }
 
 # --- PRODUCT ENDPOINTS ---
 @app.post("/api/products/")

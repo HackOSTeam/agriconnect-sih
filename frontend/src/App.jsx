@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import LogisticsRegisterPage from './pages/LogisticsRegisterPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import FarmerDashboard from './pages/FarmerDashboard';
 import BuyerDashboard from './pages/BuyerDashboard';
@@ -21,6 +22,7 @@ function App() {
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
+                <Route path="/register/logistics" element={<LogisticsRegisterPage />} />
                 <Route path="/admin/login" element={<AdminLoginPage />} />
                 <Route path="/farmer" element={<FarmerDashboard />} />
                 <Route path="/buyer" element={<BuyerDashboard />} />

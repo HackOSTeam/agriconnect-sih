@@ -5,14 +5,16 @@ from database import Base
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
-    role = Column(String, index=True)
+    role = Column(String, index=True) # "farmer", "buyer", or "logistics"
     sub_role = Column(String, default="individual")
     name = Column(String)
     mobile = Column(String, unique=True, index=True)
     email = Column(String, nullable=True, index=True)
     password = Column(String, nullable=True)
     language = Column(String, default="English")
-    status = Column(String, default="active")
+    status = Column(String, default="active") # "active", "busy", "offline"
+    
+    # Farmer / Buyer specific fields
     fpo_name = Column(String, nullable=True)
     fpo_reg_id = Column(String, nullable=True)
     village_district = Column(String, nullable=True)
@@ -38,6 +40,29 @@ class User(Base):
     monthly_volume = Column(String, nullable=True)
     preferred_crops = Column(String, nullable=True)
     business_doc_url = Column(String, nullable=True)
+    
+    # Logistics Partner Specific Fields
+    account_category = Column(String, nullable=True) # "individual_driver", "transport_company", "vehicle_owner"
+    company_name = Column(String, nullable=True)
+    driving_license = Column(String, nullable=True)
+    vehicle_type = Column(String, nullable=True) # mini-truck, tempo, refrigerated van, bike
+    num_vehicles = Column(Integer, default=1)
+    load_capacity = Column(String, nullable=True) # e.g., "500 kg", "2 Tons"
+    has_cold_storage = Column(String, default="No") # "Yes" or "No"
+    vehicle_reg_number = Column(String, nullable=True)
+    insurance_validity = Column(String, nullable=True)
+    operating_region = Column(String, nullable=True)
+    availability_schedule = Column(String, nullable=True)
+    service_radius = Column(String, nullable=True) # e.g., "50 km"
+    rate_per_km = Column(Float, nullable=True)
+    rating = Column(Float, default=5.0)
+    trips_completed = Column(Integer, default=0)
+     
+    
+    # NEW: For multiple vehicles and license photo
+    vehicles_json = Column(Text, nullable=True) # Will store a JSON array of vehicles
+    license_doc_url = Column(String, nullable=True)
+
     created_at = Column(DateTime, default=datetime.utcnow)
     last_active_at = Column(DateTime, default=datetime.utcnow)
 
