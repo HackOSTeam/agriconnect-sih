@@ -13,3 +13,11 @@ build/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Demand Forecasting & Machine Learning Artifacts
+*.mp4
+*.avi
+models/*.joblib
+models/training_log.json
+.venv/
+venv/

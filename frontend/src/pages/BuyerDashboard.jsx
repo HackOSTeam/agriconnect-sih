@@ -8,6 +8,8 @@ import {
     Zap, Check, DollarSign
 } from 'lucide-react';
 import axios from 'axios';
+import BuyerPriceCard from '../components/BuyerPriceCard';
+import ForecastWidget from '../components/ForecastWidget';
 
 export default function BuyerDashboard() {
     const [activeView, setActiveView] = useState('browse');
@@ -668,8 +670,8 @@ export default function BuyerDashboard() {
                                                                      ['picked up', 'picked_up'].includes(sLower) ? '📦 Picked Up from Farm' :
                                                                      ['in transit', 'in_transit'].includes(sLower) ? '🚚 In Transit to Depot' :
                                                                      sLower === 'delivered' ? '🎉 Delivered & Verified' :
-                                                                     sLower === 'rejected' ? '❌ Rejected by Farmer' :
-                                                                     '❌ Cancelled by Buyer'}
+                                                                     sLower === 'rejected' ? '✕ Rejected by Farmer' :
+                                                                     '✕ Cancelled by Buyer'}
                                                                 </span>
                                                             </div>
                                                             <h4 className="font-bold text-gray-900 text-base">{order.quantity_kg}kg {order.crop_name}</h4>
@@ -811,24 +813,46 @@ export default function BuyerDashboard() {
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-mono">
                                 <div className="p-4 bg-white/5 rounded-xl border border-white/10"><span className="text-gray-400 block">Total Trip Distance</span><span className="text-white font-bold text-sm">34.2 km (3 stops)</span></div>
-                                <div className="p-4 bg-white/5 rounded-xl border border-white/10"><span className="text-gray-400 block">Transit Temperature</span><span className="text-[#34D399] font-bold text-sm">22°C (Optimal Freshness)</span></div>
+                                <div className="p-4 bg-white/5 rounded-xl border border-white/10"><span className="text-gray-400 block">Transit Temperature</span><span className="text-[#34D399] font-bold text-sm">22Â°C (Optimal Freshness)</span></div>
                                 <div className="p-4 bg-white/5 rounded-xl border border-white/10"><span className="text-gray-400 block">OTP for Delivery Receiving</span><span className="text-[#F59E0B] font-bold text-sm">8819</span></div>
                             </div>
                         </div>
                     </div>
                 )}
 
-                {/* --- 6. MANDI SIGNALS VIEW --- */}
+                {/* --- 6. MANDI SIGNALS VIEW (AI Live Forecast) --- */}
                 {activeView === 'trends' && (
-                    <div className="space-y-6">
-                        <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm"><h2 className="text-2xl font-bold text-gray-900 font-serif">Mandi Price Trends & Buy Signals</h2><p className="text-xs text-gray-500">AI procurement signals on best time to buy vs wait</p></div>
-                        <div className="grid md:grid-cols-3 gap-6">
-                            <div className="bg-white border border-emerald-300 p-6 rounded-3xl shadow-sm"><span className="text-xs font-mono text-emerald-700 font-bold">BUY SIGNAL: STRONG</span><h3 className="text-lg font-bold text-gray-900 mt-1">Potatoes (Satara Hub)</h3><p className="text-xs text-gray-500 mt-2">Prices are at a 30-day low of ₹17/kg due to peak harvest arrival. Buy today.</p></div>
-                            <div className="bg-white border border-orange-300 p-6 rounded-3xl shadow-sm"><span className="text-xs font-mono text-[#EA580C] font-bold">HOLD SIGNAL</span><h3 className="text-lg font-bold text-gray-900 mt-1">Tomatoes (Pune Hub)</h3><p className="text-xs text-gray-500 mt-2">Demand rising by 24% over next 4 days. Expected price stabilization next Monday.</p></div>
-                            <div className="bg-white border border-gray-200 p-6 rounded-3xl shadow-sm"><span className="text-xs font-mono text-gray-500 font-bold">STABLE MARKET</span><h3 className="text-lg font-bold text-gray-900 mt-1">Onions (Nashik)</h3><p className="text-xs text-gray-500 mt-2">Steady inflow across all APMC yards. Price holding at ₹19/kg.</p></div>
+                    <div className="space-y-5">
+                        <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                            <div>
+                                <div className="inline-flex items-center gap-2 bg-orange-50 text-orange-800 px-3 py-1 rounded-full text-xs font-mono mb-2 border border-orange-200">
+                                    <Sparkles size={14} className="text-orange-500" /> AI Procurement Signals — AGMARKNET Live
+                                </div>
+                                <h2 className="text-xl font-bold text-gray-900 font-serif">Mandi Price Trends &amp; Buy Signals</h2>
+                                <p className="text-xs text-gray-500 mt-0.5">Real AI insights powered by AGMARKNET official data — updated daily</p>
+                            </div>
+                            <div className="bg-[#0F172A] border border-[#EA580C]/30 px-4 py-2 rounded-xl text-xs font-mono text-orange-300">
+                                Source: data.gov.in (NDSAP)
+                            </div>
+                        </div>
+                        <div className="bg-[#0F172A] rounded-3xl border border-[#EA580C]/20 p-5 sm:p-6 shadow-xl">
+                            <ForecastWidget
+                                role="buyer"
+                                defaultCommodity={(buyerProfile.preferred_crops || '').split(',')[0].trim() || 'Tomato'}
+                                defaultMarket="Pune"
+                            />
+                        </div>
+                        <div>
+                            <p className="text-xs text-gray-500 font-mono mb-3 uppercase">Quick Price Outlook (7-Day)</p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <BuyerPriceCard commodity="Tomato" market="Pune" horizon={7} />
+                                <BuyerPriceCard commodity="Onion" market="Nashik" horizon={7} />
+                                <BuyerPriceCard commodity="Potato" market="Pune" horizon={7} />
+                            </div>
                         </div>
                     </div>
                 )}
+
 
                 {/* --- 7. PROFILE VIEW --- */}
                 {activeView === 'profile' && (
@@ -855,3 +879,4 @@ export default function BuyerDashboard() {
         </div>
     );
 }
+

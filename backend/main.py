@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, Query, UploadFile, File, Form, Body, Header
+﻿from fastapi import FastAPI, Depends, HTTPException, Query, UploadFile, File, Form, Body, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -543,3 +543,26 @@ def cancel_order(req: CancelOrderRequest, db: Session = Depends(get_db)):
 
 @app.get("/")
 def read_root(): return {"message": "AgriConnect API v2.0 is running! 🌾"}
+
+# ===========================================================================
+# DEMAND FORECASTING INTEGRATION
+# ===========================================================================
+# Mount the demand_forecasting forecast_api routes directly into this FastAPI
+# app so the frontend can call /api/forecast/* without a separate service.
+# ---------------------------------------------------------------------------
+import sys as _sys, os as _os
+_FORECAST_DIR_INTERNAL = _os.path.normpath(_os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'demand_forecasting'))
+_FORECAST_DIR_SIBLING = _os.path.normpath(_os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', '..', 'demand_forecasting'))
+_FORECAST_DIR = _FORECAST_DIR_INTERNAL if _os.path.isdir(_FORECAST_DIR_INTERNAL) else _FORECAST_DIR_SIBLING
+
+if _os.path.isdir(_FORECAST_DIR) and _FORECAST_DIR not in _sys.path:
+    _sys.path.insert(0, _FORECAST_DIR)
+
+try:
+    from forecast_api import forecast_router as _forecast_router
+    app.include_router(_forecast_router)
+    logger.info(f"[AgriConnect] Demand Forecasting routes mounted at /api/forecast/*")
+except Exception as _fe:
+    logger.warning(f"[AgriConnect] Forecasting module not loaded: {_fe}. "
+                   "Run 'pip install prophet xgboost scikit-learn joblib pandas' and ensure "
+                   "demand_forecasting/ is a sibling of this backend/ directory.")

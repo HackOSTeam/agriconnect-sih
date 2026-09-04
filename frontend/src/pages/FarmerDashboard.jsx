@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
     LayoutDashboard, Package, ShoppingBag, TrendingUp, Truck,
@@ -11,6 +11,7 @@ import {
 import axios from 'axios';
 import { API_BASE_URL } from '../config';
 import TiltCard3D from '../components/TiltCard3D';
+import ForecastWidget from '../components/ForecastWidget';
 
 export default function FarmerDashboard() {
     const [activeView, setActiveView] = useState('overview');
@@ -160,7 +161,7 @@ export default function FarmerDashboard() {
             await fetchProducts();
         } catch (error) {
             console.error("Error creating product:", error);
-            showToast(`❌ Failed to save produce: ${error.response?.data?.detail || error.message}`);
+            showToast(`✕ Failed to save produce: ${error.response?.data?.detail || error.message}`);
         }
     };
 
@@ -233,7 +234,7 @@ export default function FarmerDashboard() {
                     </div>
                     <div className="hidden lg:flex items-center gap-4 bg-[#03150E] px-4 py-1.5 rounded-full border border-white/10 text-xs font-mono">
                         <span className="flex h-2 w-2 relative"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#10B981] opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-[#10B981]"></span></span>
-                        <span className="text-gray-300">Pune APMC: Tomato <span className="text-[#34D399] font-bold">₹26/kg (▲ 8%)</span></span>
+                        <span className="text-gray-300">Pune APMC: Tomato <span className="text-[#34D399] font-bold">₹26/kg (- 8%)</span></span>
                     </div>
                     <div className="flex items-center gap-3">
                         <button onClick={handleVoiceAssist} className={`p-2 sm:px-3 sm:py-2 rounded-xl text-xs font-bold border transition flex items-center gap-1.5 ${isVoiceActive ? 'bg-red-500 text-white animate-pulse border-red-400' : 'bg-white/10 hover:bg-white/15 text-[#34D399] border-white/15'}`}><Mic size={16} /><span className="hidden md:inline">Voice</span></button>
@@ -488,8 +489,8 @@ export default function FarmerDashboard() {
                                                      isPickedUp ? '🚚 Picked Up from Farm Gate' :
                                                      isInTransit ? '🛣️ In Transit to Depot' :
                                                      isDelivered ? '🎉 Delivered to Buyer' :
-                                                     st === 'rejected' ? '❌ Rejected (Stock Released)' :
-                                                     '❌ Cancelled by Buyer'}
+                                                     st === 'rejected' ? '✕ Rejected (Stock Released)' :
+                                                     '✕ Cancelled by Buyer'}
                                                 </span>
                                             </div>
                                         </div>
@@ -542,7 +543,7 @@ export default function FarmerDashboard() {
                                                     onClick={async () => {
                                                         try {
                                                             await axios.post(`${API_BASE_URL}/api/orders/update_status`, { order_id: order.id, status: 'rejected' }, { headers: getAuthHeaders() });
-                                                            showToast('❌ Order Rejected. Soft reservation released back to inventory.');
+                                                            showToast('✕ Order Rejected. Soft reservation released back to inventory.');
                                                             fetchOrders();
                                                             fetchProducts();
                                                         } catch (err) { showToast('Failed to reject order'); }
@@ -625,7 +626,7 @@ export default function FarmerDashboard() {
                                                 <p className="text-[11px] text-gray-500 font-mono text-right">
                                                     {isDelivered ? '🎉 Order successfully delivered to buyer.' :
                                                      st === 'rejected' ? '🔄 Product stock has been automatically released back to your listings.' :
-                                                     '❌ Order was cancelled by the buyer.'}
+                                                     '✕ Order was cancelled by the buyer.'}
                                                 </p>
                                             </div>
                                         )}
@@ -640,33 +641,43 @@ export default function FarmerDashboard() {
 
                 {/* --- 4. MANDI PRICE FORECAST VIEW --- */}
                 {activeView === 'forecast' && (
-                    <div className="space-y-6">
-                        <div className="bg-white p-6 rounded-2xl border border-gray-200/90 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div className="space-y-4">
+                        {/* ── Header ── */}
+                        <div className="bg-white p-5 rounded-2xl border border-gray-200/90 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                             <div>
-                                <div className="inline-flex items-center gap-2 bg-amber-50 text-amber-800 px-3 py-1 rounded-full text-xs font-mono mb-2 border border-amber-200"><Sparkles size={14} className="text-amber-600" /> AI Predictive Mandi Trends</div>
-                                <h2 className="text-2xl font-bold text-gray-900 font-serif">Mandi Demand & Price Forecasting</h2>
-                                <p className="text-xs text-gray-500">7-Day outlook based on seasonal festival spikes & arrival volumes</p>
+                                <div className="inline-flex items-center gap-2 bg-amber-50 text-amber-800 px-3 py-1 rounded-full text-xs font-mono mb-2 border border-amber-200">
+                                    <Sparkles size={14} className="text-amber-600" /> AI Mandi Intelligence — AGMARKNET
+                                </div>
+                                <h2 className="text-xl font-bold text-gray-900 font-serif">Mandi Demand & Price Forecasting</h2>
+                                <p className="text-xs text-gray-500 mt-0.5">Live AI insights from real AGMARKNET data — updated daily</p>
                             </div>
-                            <div className="bg-emerald-50 border border-emerald-200 px-4 py-2 rounded-xl text-xs font-mono text-emerald-900 font-bold">Recommendation: <b>Hold Tomato harvest for Thursday (+27% profit)</b></div>
+                            <div className="bg-[#041B13] border border-[#10B981]/30 px-4 py-2 rounded-xl text-xs font-mono text-[#34D399]">
+                                📡 Source: data.gov.in (NDSAP)
+                            </div>
                         </div>
-                        <div className="bg-[#07241A] text-white p-6 sm:p-8 rounded-3xl space-y-6 shadow-xl border border-[#10B981]/25">
-                            <div className="flex justify-between items-center">
-                                <div><h3 className="font-bold text-white text-lg">Tomato APMC Price Trend (₹/kg)</h3><p className="text-xs text-gray-300">Predictive neural simulation based on 5 regional wholesale yards</p></div>
-                                <span className="text-xs font-mono text-[#34D399] bg-white/10 px-3 py-1 rounded-full">94.2% AI Accuracy</span>
+
+                        {/* ── Live AI Forecast Widget ── */}
+                        <div className="bg-[#07241A] rounded-3xl border border-[#10B981]/25 p-5 sm:p-6 shadow-xl">
+                            <ForecastWidget
+                                role="farmer"
+                                defaultCommodity={(profileData.primary_crops || '').split(',')[0].trim() || 'Tomato'}
+                                defaultMarket={(profileData.village_district || '').split(',').slice(-1)[0].trim() || 'Pune'}
+                            />
+                        </div>
+
+                        {/* ── Tips Banner ── */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
+                            <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-start gap-2">
+                                <span className="text-xl">📦</span>
+                                <div><span className="text-emerald-900 font-bold block">Storage Tip</span><span className="text-emerald-700">If price is rising, hold produce 7–10 days in cold storage to maximize returns.</span></div>
                             </div>
-                            <div className="h-64 flex items-end justify-between gap-3 pt-8 pb-2 px-4 bg-[#031710] rounded-2xl border border-white/10 relative">
-                                {[{ day: 'Mon (Today)', price: 22, bar: 50, note: 'Base' }, { day: 'Tue', price: 23, bar: 55, note: '+4%' }, { day: 'Wed', price: 25, bar: 65, note: '+12%' }, { day: 'Thu (Peak)', price: 28, bar: 88, note: '+27% Highest', peak: true }, { day: 'Fri', price: 27, bar: 80, note: '+22%' }, { day: 'Sat', price: 26, bar: 75, note: '+18%' }, { day: 'Sun', price: 24, bar: 60, note: '+9%' }].map((d, i) => (
-                                    <div key={i} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group cursor-pointer" onClick={() => showToast(`Price on ${d.day}: ₹${d.price}/kg (${d.note})`)}>
-                                        <span className="text-xs font-mono font-bold text-white group-hover:text-[#34D399] transition">₹{d.price}</span>
-                                        <div className={`w-full rounded-t-xl transition-all duration-500 ${d.peak ? 'bg-gradient-to-t from-[#10B981] to-[#34D399] shadow-[0_0_20px_#10B981]' : 'bg-white/20 hover:bg-[#10B981]/60'}`} style={{ height: `${d.bar}%` }} />
-                                        <span className="text-[11px] font-mono text-gray-300">{d.day}</span>
-                                    </div>
-                                ))}
+                            <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200 flex items-start gap-2">
+                                <span className="text-xl">🚚</span>
+                                <div><span className="text-blue-900 font-bold block">Transport Window</span><span className="text-blue-700">Ship early morning (5–8 AM) to avoid mandi congestion on peak days.</span></div>
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-mono">
-                                <div className="p-4 rounded-xl bg-white/5 border border-white/10"><span className="text-gray-400 block">Wholesale Demand Index</span><span className="text-lg font-bold text-[#34D399]">High (8.4/10)</span></div>
-                                <div className="p-4 rounded-xl bg-white/5 border border-white/10"><span className="text-gray-400 block">Nearby Mandi Glut Risk</span><span className="text-lg font-bold text-emerald-400">Low (No Excess Inflow)</span></div>
-                                <div className="p-4 rounded-xl bg-white/5 border border-white/10"><span className="text-gray-400 block">Suggested Action</span><span className="text-lg font-bold text-[#F59E0B]">Harvest Thursday Morning</span></div>
+                            <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 flex items-start gap-2">
+                                <span className="text-xl">📊</span>
+                                <div><span className="text-amber-900 font-bold block">Market Intelligence</span><span className="text-amber-700">Monsoon months typically bring supply dips — plan staggered harvests.</span></div>
                             </div>
                         </div>
                     </div>
