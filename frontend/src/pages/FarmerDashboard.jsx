@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
     LayoutDashboard, Package, ShoppingBag, TrendingUp, Truck,
@@ -12,6 +12,7 @@ import axios from 'axios';
 import { API_BASE_URL } from '../config';
 import TiltCard3D from '../components/TiltCard3D';
 import ForecastWidget from '../components/ForecastWidget';
+import RouteOptimizerWidget from '../components/RouteOptimizerWidget';
 
 export default function FarmerDashboard() {
     const [activeView, setActiveView] = useState('overview');
@@ -685,35 +686,50 @@ export default function FarmerDashboard() {
 
                 {/* --- 5. LOGISTICS & PICKUP VIEW --- */}
                 {activeView === 'logistics' && (
-                    <div className="space-y-6">
-                        <div className="bg-white p-6 rounded-2xl border border-gray-200/90 shadow-sm flex justify-between items-center">
-                            <div><h2 className="text-2xl font-bold text-gray-900 font-serif">Smart Farm-Gate Logistics</h2><p className="text-xs text-gray-500">Pooled vehicle aggregation and live driver dispatch</p></div>
-                            <span className="text-xs bg-emerald-50 text-emerald-800 px-3 py-1.5 rounded-xl font-mono font-bold border border-emerald-200">Route Engine #OR-49</span>
-                        </div>
-                        <div className="grid lg:grid-cols-2 gap-6">
-                            <div className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm space-y-4">
-                                <div className="flex items-center gap-3 pb-3 border-b border-gray-100"><div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold"><Truck size={20} /></div><div><h3 className="font-bold text-gray-900">Assigned Van: Tata Ace (MH-12-QE-4920)</h3><p className="text-xs text-gray-500">Driver: Santosh Jadhav • +91 98221 44102</p></div></div>
-                                <div className="space-y-3 text-xs">
-                                    <div className="flex justify-between py-1 border-b border-gray-50"><span className="text-gray-500">Pickup Location:</span><span className="text-gray-900 font-semibold">Survey No. 42, Haveli, Pune</span></div>
-                                    <div className="flex justify-between py-1 border-b border-gray-50"><span className="text-gray-500">Estimated Arrival:</span><span className="text-emerald-700 font-bold font-mono">Today at 11:30 AM (In 25 mins)</span></div>
-                                    <div className="flex justify-between py-1 border-b border-gray-50"><span className="text-gray-500">Aggregated Batch:</span><span className="text-gray-900 font-semibold">500kg Tomatoes (Pooled with 2 other farms)</span></div>
+                    <div className="space-y-5">
+                        {/* ── Header ── */}
+                        <div className="bg-white p-5 rounded-2xl border border-gray-200/90 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                            <div>
+                                <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-800 px-3 py-1 rounded-full text-xs font-mono mb-2 border border-emerald-200">
+                                    <Truck size={14} className="text-emerald-600" /> AI Route Optimization Engine — Google OR-Tools
                                 </div>
-                                <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200 flex items-center justify-between">
-                                    <div><div className="text-xs text-emerald-800 font-medium">Pickup Security OTP</div><div className="text-2xl font-bold font-mono text-[#EA580C]">4910</div></div>
-                                    <button onClick={() => showToast('OTP shared with driver Santosh')} className="bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow transition">Share with Driver</button>
-                                </div>
+                                <h2 className="text-xl font-bold text-gray-900 font-serif">Smart Farm-Gate Logistics & Route Optimization</h2>
+                                <p className="text-xs text-gray-500 mt-0.5">Real-time pickup aggregation, dynamic vehicle capacity constraints & driver dispatch ETAs</p>
                             </div>
-                            <div className="bg-[#07241A] text-white border border-white/10 p-6 rounded-2xl flex flex-col justify-between shadow-lg">
-                                <h3 className="font-bold text-white text-sm mb-3">Live Multi-Stop Route Telemetry</h3>
-                                <div className="bg-[#031710] h-48 rounded-xl border border-white/10 relative overflow-hidden flex items-center justify-center p-4">
-                                    <svg className="w-full h-full" viewBox="0 0 280 120">
-                                        <path d="M 20 80 Q 90 20, 160 70 T 260 30" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="3" />
-                                        <path d="M 20 80 Q 90 20, 160 70 T 260 30" fill="none" stroke="#10B981" strokeWidth="3" className="animate-route-dash" />
-                                        <circle cx="20" cy="80" r="5" fill="#10B981" /><circle cx="115" cy="40" r="7" fill="#F59E0B" className="animate-ping" /><circle cx="115" cy="40" r="5" fill="#F59E0B" /><circle cx="260" cy="30" r="7" fill="#EA580C" />
-                                    </svg>
-                                    <div className="absolute bottom-3 left-3 text-[10px] font-mono text-[#34D399] bg-[#022C22]/90 px-2 py-1 rounded border border-[#10B981]/30">Van Status: Moving to Stop 2 (Your Farm)</div>
+                            <div className="bg-[#041B13] border border-[#10B981]/30 px-4 py-2 rounded-xl text-xs font-mono text-[#34D399] flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-[#10B981] animate-ping" />
+                                🚚 OR-Tools PDP-VRPTW Online
+                            </div>
+                        </div>
+
+                        {/* ── Interactive Route Optimization Model ── */}
+                        <RouteOptimizerWidget
+                            standalone={false}
+                            title="KisanRoute AI — Multi-Stop Route Optimizer"
+                            subtitle="Adjust farmer availability, buyer demand & vehicle capacities to compute optimal routes in real-time"
+                        />
+
+                        {/* ── Farm-Gate Verification OTP & Driver Info ── */}
+                        <div className="grid md:grid-cols-2 gap-4">
+                            <div className="p-4 bg-white border border-gray-200/90 rounded-2xl shadow-sm flex items-center justify-between">
+                                <div>
+                                    <span className="text-xs text-emerald-800 font-medium block">Farm-Gate Security Handshake OTP</span>
+                                    <span className="text-2xl font-bold font-mono text-[#EA580C]">4910</span>
+                                    <span className="text-[10px] text-gray-500 block">Provide this OTP to driver upon loading produce</span>
                                 </div>
-                                <div className="text-xs text-gray-300 mt-3 flex justify-between"><span>Pooled transit savings: <b className="text-[#34D399]">₹320 on this run</b></span><span className="text-[#34D399]">Zero Brokerage Friction</span></div>
+                                <button onClick={() => showToast('✅ OTP shared with driver Santosh')} className="bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow transition">
+                                    Share with Driver
+                                </button>
+                            </div>
+                            <div className="p-4 bg-white border border-gray-200/90 rounded-2xl shadow-sm flex items-center justify-between text-xs font-mono">
+                                <div>
+                                    <span className="text-gray-500 block">Assigned Van:</span>
+                                    <span className="font-bold text-gray-900 text-sm">Tata Ace (MH-12-QE-4920)</span>
+                                    <span className="text-emerald-700 block text-[11px] font-bold">Driver: Santosh Jadhav • +91 98221 44102</span>
+                                </div>
+                                <span className="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-xs font-bold">
+                                    En Route (ETA: 20 mins)
+                                </span>
                             </div>
                         </div>
                     </div>

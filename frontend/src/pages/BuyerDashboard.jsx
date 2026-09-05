@@ -5,11 +5,12 @@ import {
     TrendingUp, User, Search, Mic, Filter, MapPin, CheckCircle2,
     Sparkles, ArrowRight, ShieldCheck, Star, ChevronRight, X,
     Plus, Minus, Trash2, Clock, AlertCircle, RefreshCw, Sprout,
-    Zap, Check, DollarSign
+    Zap, Check, DollarSign, Navigation
 } from 'lucide-react';
 import axios from 'axios';
 import BuyerPriceCard from '../components/BuyerPriceCard';
 import ForecastWidget from '../components/ForecastWidget';
+import RouteOptimizerWidget from '../components/RouteOptimizerWidget';
 
 export default function BuyerDashboard() {
     const [activeView, setActiveView] = useState('browse');
@@ -188,6 +189,7 @@ export default function BuyerDashboard() {
         ...(isBulk ? [{ id: 'bulk', label: 'Bulk Contracts', icon: Layers }] : []),
         { id: 'tracking', label: 'Live GPS', icon: Truck },
         { id: 'trends', label: 'Mandi Signals', icon: TrendingUp },
+        { id: 'logistics', label: 'Smart Logistics', icon: Navigation },
         { id: 'profile', label: 'Profile', icon: User },
     ];
 
@@ -850,6 +852,30 @@ export default function BuyerDashboard() {
                                 <BuyerPriceCard commodity="Potato" market="Pune" horizon={7} />
                             </div>
                         </div>
+                    </div>
+                )}
+
+                {/* --- 7. SMART LOGISTICS & ROUTE OPTIMIZATION VIEW --- */}
+                {activeView === 'logistics' && (
+                    <div className="space-y-5">
+                        <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                            <div>
+                                <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-800 px-3 py-1 rounded-full text-xs font-mono mb-2 border border-emerald-200">
+                                    <Sparkles size={14} className="text-emerald-600" /> AI Fleet Dispatch &amp; Road Optimization
+                                </div>
+                                <h2 className="text-xl font-bold text-gray-900 font-serif">Consolidated Multi-Farm Logistics</h2>
+                                <p className="text-xs text-gray-500 mt-0.5">Automated multi-pickup consolidation to your delivery depot — save 30-40% transport costs</p>
+                            </div>
+                            <Link to="/logistics" className="bg-[#0F172A] hover:bg-[#1E293B] text-white px-4 py-2 rounded-xl text-xs font-mono transition flex items-center gap-2 border border-white/10">
+                                <Truck size={14} className="text-[#34D399]" /> Open Dedicated Command Center <ArrowRight size={14} />
+                            </Link>
+                        </div>
+
+                        <RouteOptimizerWidget
+                            standalone={false}
+                            title="Wholesale Buyer Delivery Route Engine"
+                            subtitle="Combine multiple farm lots into single optimal vehicle loops with arrival ETAs"
+                        />
                     </div>
                 )}
 

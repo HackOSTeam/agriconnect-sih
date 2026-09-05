@@ -1,4 +1,4 @@
-﻿from fastapi import FastAPI, Depends, HTTPException, Query, UploadFile, File, Form, Body, Header
+from fastapi import FastAPI, Depends, HTTPException, Query, UploadFile, File, Form, Body, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -21,7 +21,7 @@ import database, models
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger("agriconnect")
 
-app = FastAPI(title="AgriConnect API", version="2.0")
+app = FastAPI(title="AgriConnect API", version="3.0")
 
 # --- EXPLICIT CORS FIX ---
 app.add_middleware(
@@ -542,7 +542,10 @@ def cancel_order(req: CancelOrderRequest, db: Session = Depends(get_db)):
     return {"message": "Order cancelled successfully", "status": order.status}
 
 @app.get("/")
-def read_root(): return {"message": "AgriConnect API v2.0 is running! 🌾"}
+def read_root(): return {"message": "AgriConnect API v3.0 is running! (Demand Forecasting + Route Optimization) 🌾🚚"}
+
+@app.get("/health")
+def health_check(): return {"status": "healthy", "version": "3.0"}
 
 # ===========================================================================
 # DEMAND FORECASTING INTEGRATION
@@ -566,3 +569,25 @@ except Exception as _fe:
     logger.warning(f"[AgriConnect] Forecasting module not loaded: {_fe}. "
                    "Run 'pip install prophet xgboost scikit-learn joblib pandas' and ensure "
                    "demand_forecasting/ is a sibling of this backend/ directory.")
+
+# ===========================================================================
+# ROUTE OPTIMIZATION INTEGRATION (VERSION 3)
+# ===========================================================================
+# Mount the Google OR-Tools PDP-VRPTW multi-vehicle route optimization router
+# directly into this FastAPI app for /api/v1/* and /api/route/* endpoints.
+# ---------------------------------------------------------------------------
+_ROUTE_SRC_INTERNAL = _os.path.normpath(os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', 'Route-Optimization-model', 'src'))
+_ROUTE_SRC_SIBLING = _os.path.normpath(os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', '..', 'Route-Optimization-model', 'src'))
+_ROUTE_SRC_DIR = _ROUTE_SRC_INTERNAL if _os.path.isdir(_ROUTE_SRC_INTERNAL) else _ROUTE_SRC_SIBLING
+
+if _os.path.isdir(_ROUTE_SRC_DIR) and _ROUTE_SRC_DIR not in _sys.path:
+    _sys.path.insert(0, _ROUTE_SRC_DIR)
+
+try:
+    from route_api import route_router as _route_router
+    app.include_router(_route_router)
+    logger.info(f"[AgriConnect] Route Optimization routes mounted at /api/v1/* and /api/route/*")
+except Exception as _re:
+    logger.warning(f"[AgriConnect] Route optimization module not loaded: {_re}. "
+                   "Ensure Route-Optimization-model/ is present.")
+

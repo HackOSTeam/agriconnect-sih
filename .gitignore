@@ -21,3 +21,4 @@ models/*.joblib
 models/training_log.json
 .venv/
 venv/
+/agriconnect.db
