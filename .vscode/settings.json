@@ -8,5 +8,11 @@
         "./Route-Optimization-model/src",
         "./backend",
         "./demand_forecasting"
-    ]
+    ],
+    "workbench.editorAssociations": {
+        "*.db": "qwtel.sqlite-viewer",
+        "*.sqlite": "qwtel.sqlite-viewer",
+        "*.sqlite3": "qwtel.sqlite-viewer",
+        "*.db.local.bak": "qwtel.sqlite-viewer"
+    }
 }

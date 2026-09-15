@@ -90,25 +90,33 @@ export default function LogisticsRegisterPage() {
     };
 
     return (
-        <div className="min-h-screen relative flex items-center justify-center p-4 py-12 bg-[#F4F8F4] text-[#0F172A] font-sans overflow-x-hidden">
-            <Particle3DCanvas className="opacity-25" />
-            <div className="fixed top-[-10%] right-[-5%] w-[500px] h-[500px] bg-[#EA580C] rounded-full filter blur-[140px] opacity-15 pointer-events-none" />
+        <div className="min-h-screen relative flex items-center justify-center p-4 py-12 bg-[#F4F7F4] text-[#1C2A22] font-sans overflow-x-hidden">
+            <Particle3DCanvas className="opacity-15" />
+            <div className="fixed top-[-10%] right-[-5%] w-[500px] h-[500px] bg-[#0B4628] rounded-full filter blur-[160px] opacity-[0.06] pointer-events-none" />
 
             <div className="relative z-10 w-full max-w-2xl">
-                <div className="bg-white border border-[#E2E8F0] rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.08)] overflow-hidden">
-                    <div className="bg-gradient-to-r from-[#1E293B] via-[#0F172A] to-[#1E293B] p-6 text-white flex items-center justify-between border-b border-orange-500/30">
-                        <Link to="/" className="flex items-center gap-2 text-gray-300 hover:text-white transition">
-                            <Sprout size={22} className="text-[#F97316]" />
-                            <span className="font-extrabold font-serif text-xl">Agri<span className="text-[#F97316]">Connect</span></span>
+                <div className="bg-white border border-[#E5EAE5] rounded-3xl shadow-[0_15px_35px_rgba(0,0,0,0.05)] overflow-hidden">
+                    {/* Header */}
+                    <div className="bg-white p-6 border-b border-[#E5EAE5] flex items-center justify-between">
+                        <Link to="/" className="flex items-center gap-2 text-gray-700 hover:text-[#0B4628] transition">
+                            <div className="w-9 h-9 bg-emerald-50 border border-emerald-200 text-[#0B4628] rounded-xl flex items-center justify-center">
+                                <Sprout size={20} className="stroke-[2.5]" />
+                            </div>
+                            <span className="font-extrabold font-serif text-xl text-[#1C2A22]">Agri<span className="text-[#0B4628]">Connect</span></span>
                         </Link>
-                        <span className="text-xs font-mono text-[#F97316] bg-orange-500/20 px-2.5 py-0.5 rounded border border-orange-500/30">Fleet Partner Registration</span>
+                        <span className="text-xs font-mono text-[#0B4628] bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 font-semibold">
+                            Fleet Partner Registration
+                        </span>
                     </div>
 
                     <div className="p-6 sm:p-8 space-y-6">
-                        <h1 className="text-2xl font-bold font-serif text-center">Join the Logistics Network</h1>
+                        <div className="text-center space-y-1">
+                            <h1 className="text-2xl font-bold font-serif text-[#1C2A22]">Join the Logistics Network</h1>
+                            <p className="text-xs text-gray-500">Connect with local farms, streamline dispatches, and optimize routes</p>
+                        </div>
 
-                        {error && <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs">{error}</div>}
-                        {successMessage && <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs">{successMessage}</div>}
+                        {error && <div className="p-3.5 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs">{error}</div>}
+                        {successMessage && <div className="p-3.5 bg-emerald-50 border border-emerald-200 text-[#0B4628] rounded-xl text-xs font-semibold">{successMessage}</div>}
 
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -153,20 +161,26 @@ export default function LogisticsRegisterPage() {
                                 </div>
                             </div>
 
-                            <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl">
-                                <label className="text-xs font-bold text-gray-700 block mb-2 flex items-center gap-2"><FileText size={16} className="text-[#EA580C]" /> Upload Driving License Photo</label>
-                                <input type="file" accept="image/*" onChange={(e) => setLicensePhoto(e.target.files[0])} className="text-xs text-gray-700 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#059669] file:text-white hover:file:bg-[#047857] cursor-pointer w-full" />
+                            <div className="p-4 bg-emerald-50/40 border border-emerald-100 rounded-2xl">
+                                <label className="text-xs font-bold text-gray-700 block mb-2 flex items-center gap-2">
+                                    <FileText size={16} className="text-[#0B4628]" /> Upload Driving License Photo
+                                </label>
+                                <input type="file" accept="image/*" onChange={(e) => setLicensePhoto(e.target.files[0])} className="text-xs text-gray-700 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#0B4628] file:text-white hover:file:bg-[#073820] cursor-pointer w-full" />
                             </div>
 
                             <div className="pt-4 border-t border-gray-100">
                                 <div className="flex justify-between items-center mb-3">
-                                    <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2"><Truck size={16} className="text-[#EA580C]" /> Vehicle Details</h3>
-                                    <button type="button" onClick={addVehicle} className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-emerald-100"><Plus size={14} /> Add Vehicle</button>
+                                    <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2">
+                                        <Truck size={16} className="text-[#0B4628]" /> Vehicle Details
+                                    </h3>
+                                    <button type="button" onClick={addVehicle} className="text-xs font-bold text-[#0B4628] bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-xl flex items-center gap-1 hover:bg-emerald-100 transition">
+                                        <Plus size={14} /> Add Vehicle
+                                    </button>
                                 </div>
 
                                 <div className="space-y-4">
                                     {vehicles.map((v, index) => (
-                                        <div key={index} className="p-4 bg-gray-50 border border-gray-200 rounded-2xl space-y-3 relative">
+                                        <div key={index} className="p-4 bg-gray-50/80 border border-gray-200 rounded-2xl space-y-3 relative">
                                             {vehicles.length > 1 && (
                                                 <button type="button" onClick={() => removeVehicle(index)} className="absolute top-2 right-2 text-red-500 hover:text-red-700"><X size={16} /></button>
                                             )}
@@ -206,30 +220,32 @@ export default function LogisticsRegisterPage() {
                             </div>
 
                             <div className="pt-4 border-t border-gray-100">
-                                <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2"><MapPin size={16} className="text-[#EA580C]" /> Operational Details</h3>
+                                <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
+                                    <MapPin size={16} className="text-[#0B4628]" /> Operational Details
+                                </h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
                                         <label className="text-xs font-bold text-gray-700 block mb-1">Operating Region</label>
-                                        <input type="text" name="operating_region" value={formData.operating_region} onChange={handleChange} placeholder="e.g. Pune" className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs" required />
+                                        <input type="text" name="operating_region" value={formData.operating_region} onChange={handleChange} placeholder="e.g. Pune" className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:border-[#0B4628] focus:bg-white transition" required />
                                     </div>
                                     <div>
                                         <label className="text-xs font-bold text-gray-700 block mb-1">Service Radius</label>
-                                        <input type="text" name="service_radius" value={formData.service_radius} onChange={handleChange} placeholder="e.g. 50 km" className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs" required />
+                                        <input type="text" name="service_radius" value={formData.service_radius} onChange={handleChange} placeholder="e.g. 50 km" className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:border-[#0B4628] focus:bg-white transition" required />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                                     <div>
                                         <label className="text-xs font-bold text-gray-700 block mb-1">Schedule</label>
-                                        <input type="text" name="availability_schedule" value={formData.availability_schedule} onChange={handleChange} placeholder="e.g. Mon-Sat, 8 AM-8 PM" className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs" required />
+                                        <input type="text" name="availability_schedule" value={formData.availability_schedule} onChange={handleChange} placeholder="e.g. Mon-Sat, 8 AM-8 PM" className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:border-[#0B4628] focus:bg-white transition" required />
                                     </div>
                                     <div>
                                         <label className="text-xs font-bold text-gray-700 block mb-1">Rate per km (₹)</label>
-                                        <input type="number" name="rate_per_km" value={formData.rate_per_km} onChange={handleChange} placeholder="e.g. 15" step="0.1" className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs" required />
+                                        <input type="number" name="rate_per_km" value={formData.rate_per_km} onChange={handleChange} placeholder="e.g. 15" step="0.1" className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:border-[#0B4628] focus:bg-white transition" required />
                                     </div>
                                 </div>
                             </div>
 
-                            <button type="submit" disabled={isLoading} className="w-full py-3.5 rounded-xl font-bold text-sm bg-gradient-to-r from-[#EA580C] to-[#C2410C] text-white shadow-lg shadow-orange-600/20 transition-all flex items-center justify-center gap-2">
+                            <button type="submit" disabled={isLoading} className="w-full py-3.5 rounded-xl font-bold text-sm bg-[#0B4628] hover:bg-[#073820] text-white shadow-md shadow-[#0B4628]/20 transition-all flex items-center justify-center gap-2">
                                 {isLoading ? 'Registering Fleet Partner...' : 'Complete Registration'} <ArrowRight size={16} />
                             </button>
                         </form>
@@ -238,4 +254,6 @@ export default function LogisticsRegisterPage() {
             </div>
         </div>
     );
+
+
 }
