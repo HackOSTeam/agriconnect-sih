@@ -1,0 +1,12 @@
+{
+    "python.analysis.extraPaths": [
+        "./Route-Optimization-model/src",
+        "./backend",
+        "./demand_forecasting"
+    ],
+    "python.autoComplete.extraPaths": [
+        "./Route-Optimization-model/src",
+        "./backend",
+        "./demand_forecasting"
+    ]
+}

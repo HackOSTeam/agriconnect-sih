@@ -186,6 +186,32 @@ export default function LoginPage() {
                             </button>
                         </div>
 
+                        {/* Quick Demo Credentials Pill */}
+                        <div className="flex items-center justify-between px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-[11px]">
+                            <span className="text-gray-600 font-medium">
+                                Demo {role === 'farmer' ? 'Farmer' : 'Buyer'}: <b className="text-gray-900 font-mono">{role === 'farmer' ? 'Tanmayi Khot (Tanu)' : 'Rachana (Tanu)'}</b>
+                            </span>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    if (role === 'farmer') {
+                                        setFarmerIdentifier('Tanmayi Khot');
+                                        setFarmerPassword('Tanu');
+                                    } else {
+                                        setBuyerIdentifier('Rachana');
+                                        setBuyerPassword('Tanu');
+                                    }
+                                }}
+                                className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition shadow-sm ${
+                                    role === 'farmer' 
+                                        ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' 
+                                        : 'bg-orange-100 text-orange-800 hover:bg-orange-200'
+                                }`}
+                            >
+                                Auto-Fill Demo
+                            </button>
+                        </div>
+
                         {/* ======================================================== */}
                         {/* 1. FARMER LOGIN FORM */}
                         {/* ======================================================== */}

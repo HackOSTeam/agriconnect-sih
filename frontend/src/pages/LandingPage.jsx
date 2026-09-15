@@ -118,11 +118,14 @@ export default function LandingPage() {
                     </div>
                 </Link>
 
-                <div className="hidden md:flex items-center gap-7 text-sm font-medium text-gray-600">
+                <div className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
                     <a href="#features" className="hover:text-[#059669] transition-colors">Features</a>
                     <a href="#automation" className="hover:text-[#059669] transition-colors flex items-center gap-1.5">
                         <Sparkles size={15} className="text-[#F59E0B]" /> AI Tech
                     </a>
+                    <Link to="/logistics" className="hover:text-[#059669] transition-colors flex items-center gap-1.5 text-emerald-800 font-semibold bg-emerald-50 hover:bg-emerald-100 px-3 py-1 rounded-full border border-emerald-200">
+                        <Truck size={14} className="text-[#059669]" /> Smart Logistics
+                    </Link>
                     <a href="#how" className="hover:text-[#059669] transition-colors">How It Works</a>
                     <a href="#impact" className="hover:text-[#059669] transition-colors">Impact</a>
                 </div>
@@ -468,9 +471,14 @@ export default function LandingPage() {
                             </div>
                         </div>
 
-                        <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between text-xs text-gray-400">
-                            <span>Saved 14.8 km per run</span>
-                            <span className="text-[#F97316] font-mono font-bold">-38% Fuel Burn</span>
+                        <div className="mt-4 pt-3 border-t border-white/10 space-y-2">
+                            <div className="flex items-center justify-between text-xs text-gray-400">
+                                <span>Saved 14.8 km per run</span>
+                                <span className="text-[#F97316] font-mono font-bold">-38% Fuel Burn</span>
+                            </div>
+                            <Link to="/logistics" className="w-full bg-[#EA580C] hover:bg-[#C2410C] text-white text-xs font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 transition shadow">
+                                <Truck size={14} /> Open Live Route Optimizer <ArrowRight size={14} />
+                            </Link>
                         </div>
                     </TiltCard3D>
 
