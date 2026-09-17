@@ -143,4 +143,6 @@ class Order(Base):
     payment_method = Column(String, nullable=True)
     delivery_address = Column(String, nullable=True)
     order_note = Column(String, nullable=True)
+    delivery_mode = Column(String, default="F2C")
+    transporter_id = Column(Integer, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)

@@ -5,7 +5,7 @@ import {
     TrendingUp, User, Search, Mic, Filter, MapPin, CheckCircle2,
     Sparkles, ArrowRight, ShieldCheck, Star, ChevronRight, X,
     Plus, Minus, Trash2, Clock, AlertCircle, RefreshCw, Sprout,
-    Zap, Check, DollarSign, Navigation
+    Zap, Check, DollarSign, Navigation, Warehouse
 } from 'lucide-react';
 import axios from 'axios';
 import BuyerPriceCard from '../components/BuyerPriceCard';
@@ -36,6 +36,7 @@ export default function BuyerDashboard() {
     const [deliveryAddress, setDeliveryAddress] = useState('Market Yard, Gultekdi, Pune 411037');
     const [orderNote, setOrderNote] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('Bank Transfer (NEFT/RTGS)');
+    const [deliveryMode, setDeliveryMode] = useState('F2C'); // NEW: 'F2C' (Direct) or 'F2W2C' (Warehouse)
     const [buyerOrders, setBuyerOrders] = useState([]);
     const [buyerOrderFilter, setBuyerOrderFilter] = useState('all');
 
@@ -193,7 +194,6 @@ export default function BuyerDashboard() {
         { id: 'profile', label: 'Profile', icon: User },
     ];
 
-    // Filter and group orders by order_group_id for Amazon/Zomato style history
     const filteredBuyerOrders = buyerOrders.filter(order => {
         const s = (order.status || '').toLowerCase();
         if (buyerOrderFilter === 'all') return true;
@@ -408,6 +408,30 @@ export default function BuyerDashboard() {
                                     </div>
                                     <div className="lg:col-span-4 bg-white border border-gray-200 p-6 rounded-3xl space-y-6 h-fit shadow-sm sticky top-24">
                                         <h3 className="font-bold text-gray-900 text-base">Order Summary</h3>
+
+                                        {/* NEW: F2C vs F2W2C Price Comparison */}
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-bold text-gray-700 block">Select Delivery Pipeline:</label>
+
+                                            {/* F2C Option */}
+                                            <div onClick={() => setDeliveryMode('F2C')} className={`p-3 border-2 rounded-xl cursor-pointer transition ${deliveryMode === 'F2C' ? 'border-[#EA580C] bg-orange-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-xs font-bold text-gray-900 flex items-center gap-2"><Truck size={14} className="text-[#EA580C]" /> Direct (F2C)</span>
+                                                    <span className="text-xs font-mono text-[#EA580C] font-bold">+₹180</span>
+                                                </div>
+                                                <p className="text-[10px] text-gray-500 mt-1">Direct truck from farm to you (1-2 days). Best for bulk.</p>
+                                            </div>
+
+                                            {/* F2W2C Option */}
+                                            <div onClick={() => setDeliveryMode('F2W2C')} className={`p-3 border-2 rounded-xl cursor-pointer transition ${deliveryMode === 'F2W2C' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-xs font-bold text-gray-900 flex items-center gap-2"><Warehouse size={14} className="text-emerald-600" /> Warehouse (F2W2C)</span>
+                                                    <span className="text-xs font-mono text-emerald-700 font-bold">+₹50</span>
+                                                </div>
+                                                <p className="text-[10px] text-gray-500 mt-1">Pooled via central warehouse (3-4 days). Best for small orders.</p>
+                                            </div>
+                                        </div>
+
                                         {(() => {
                                             const subtotal = cart.reduce((s, i) => s + (i.price_per_kg * i.orderQty), 0);
                                             const totalQty = cart.reduce((s, i) => s + i.orderQty, 0);
@@ -415,12 +439,13 @@ export default function BuyerDashboard() {
                                             const bulkMin = 100;
                                             const meetsBulkMin = !isBulk || totalQty >= bulkMin;
                                             const hasInvalidQty = cart.some(i => i.orderQty < (i.moq || 25) || i.orderQty > i.quantity_kg);
+                                            const logisticsFee = deliveryMode === 'F2C' ? 180 : 50; // Dynamic fee
                                             return (
                                                 <>
                                                     <div className="space-y-3 text-xs font-mono">
                                                         <div className="flex justify-between text-gray-600"><span>Subtotal ({totalQty}kg)</span><span>₹{subtotal}</span></div>
-                                                        <div className="flex justify-between text-gray-600"><span>Pooled Logistics Fee</span><span className="text-emerald-700 font-bold">₹180</span></div>
-                                                        <div className="pt-3 border-t border-gray-100 flex justify-between text-sm font-bold text-gray-900"><span>Total</span><span className="text-[#EA580C] font-mono">₹{subtotal + 180}</span></div>
+                                                        <div className="flex justify-between text-gray-600"><span>Pooled Logistics Fee</span><span className="text-emerald-700 font-bold">₹{logisticsFee}</span></div>
+                                                        <div className="pt-3 border-t border-gray-100 flex justify-between text-sm font-bold text-gray-900"><span>Total</span><span className="text-[#EA580C] font-mono">₹{subtotal + logisticsFee}</span></div>
                                                     </div>
                                                     {isBulk && !meetsBulkMin && <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 font-mono text-center">⚠️ Add {bulkMin - totalQty}kg more for bulk checkout.</div>}
                                                     <button onClick={() => setCheckoutStep('address')} disabled={!meetsBulkMin || hasInvalidQty} className={`w-full py-4 rounded-2xl font-bold text-sm shadow-xl transition ${meetsBulkMin && !hasInvalidQty ? 'bg-[#EA580C] hover:bg-[#C2410C] text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}>Proceed to Delivery <ArrowRight size={16} className="inline ml-2" /></button>
@@ -488,42 +513,43 @@ export default function BuyerDashboard() {
                                         <option>Cash on Delivery (COD)</option>
                                     </select>
                                     <div className="space-y-2 text-xs font-mono border-t pt-4">
-                                         <div className="flex justify-between text-gray-600"><span>Items Total</span><span>₹{cart.reduce((s, i) => s + (i.price_per_kg * i.orderQty), 0)}</span></div>
-                                         <div className="flex justify-between text-gray-600"><span>Logistics Fee</span><span>₹180</span></div>
-                                         <div className="flex justify-between text-gray-600"><span>GST / Taxes</span><span>₹0.00</span></div>
-                                         <div className="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t mt-2"><span>Grand Total</span><span className="text-[#EA580C]">₹{cart.reduce((s, i) => s + (i.price_per_kg * i.orderQty), 0) + 180}</span></div>
-                                     </div>
-                                     <button
-                                         onClick={async () => {
-                                             try {
-                                                 const currentBuyer = localStorage.getItem('userName') || buyerName;
-                                                 const res = await axios.post('http://127.0.0.1:8000/api/checkout', {
-                                                     buyer_name: currentBuyer,
-                                                     delivery_address: deliveryAddress || buyerProfile.delivery_address || 'Market Yard, Gultekdi, Pune 411037',
-                                                     order_note: orderNote || 'Standard wholesale delivery with quality inspection.',
-                                                     payment_method: paymentMethod || 'Bank Transfer (NEFT/RTGS)',
-                                                     items: cart.map(i => ({ 
-                                                         product_id: i.product_id || i.id, 
-                                                         farmer_name: i.farmer_name, 
-                                                         crop_name: i.crop_name, 
-                                                         quantity_kg: Number(i.orderQty || i.quantity_kg), 
-                                                         price_per_kg: Number(i.price_per_kg), 
-                                                         cancellation_window_hours: i.cancellation_window_hours || 24 
-                                                     }))
-                                                 }, { headers: getAuthHeaders() });
-                                                 setPlacedOrders(res.data.orders);
-                                                 setCart([]);
-                                                 setCheckoutStep('success');
-                                                 fetchBuyerOrders();
-                                                 fetchProducts();
-                                                 showToast(`🎉 Order Placed! Reference #${res.data.order_group_id || 'AG'}`);
-                                             } catch (err) {
-                                                 showToast(err.response?.data?.detail || 'Checkout failed. Stock changed.');
-                                                 setCheckoutStep('cart');
-                                             }
-                                         }}
-                                         className="w-full py-4 rounded-2xl font-bold text-sm shadow-xl bg-[#EA580C] hover:bg-[#C2410C] text-white shadow-orange-600/25 transition"
-                                     >Confirm & Place Order</button>
+                                        <div className="flex justify-between text-gray-600"><span>Items Total</span><span>₹{cart.reduce((s, i) => s + (i.price_per_kg * i.orderQty), 0)}</span></div>
+                                        <div className="flex justify-between text-gray-600"><span>Logistics Fee ({deliveryMode})</span><span>₹{deliveryMode === 'F2C' ? 180 : 50}</span></div>
+                                        <div className="flex justify-between text-gray-600"><span>GST / Taxes</span><span>₹0.00</span></div>
+                                        <div className="flex justify-between text-lg font-bold text-gray-900 pt-2 border-t mt-2"><span>Grand Total</span><span className="text-[#EA580C]">₹{cart.reduce((s, i) => s + (i.price_per_kg * i.orderQty), 0) + (deliveryMode === 'F2C' ? 180 : 50)}</span></div>
+                                    </div>
+                                    <button
+                                        onClick={async () => {
+                                            try {
+                                                const currentBuyer = localStorage.getItem('userName') || buyerName;
+                                                const res = await axios.post('http://127.0.0.1:8000/api/checkout', {
+                                                    buyer_name: currentBuyer,
+                                                    delivery_address: deliveryAddress || buyerProfile.delivery_address || 'Market Yard, Gultekdi, Pune 411037',
+                                                    order_note: orderNote || 'Standard wholesale delivery with quality inspection.',
+                                                    payment_method: paymentMethod || 'Bank Transfer (NEFT/RTGS)',
+                                                    delivery_mode: deliveryMode, // NEW: Sending delivery mode to backend
+                                                    items: cart.map(i => ({
+                                                        product_id: i.product_id || i.id,
+                                                        farmer_name: i.farmer_name,
+                                                        crop_name: i.crop_name,
+                                                        quantity_kg: Number(i.orderQty || i.quantity_kg),
+                                                        price_per_kg: Number(i.price_per_kg),
+                                                        cancellation_window_hours: i.cancellation_window_hours || 24
+                                                    }))
+                                                }, { headers: getAuthHeaders() });
+                                                setPlacedOrders(res.data.orders);
+                                                setCart([]);
+                                                setCheckoutStep('success');
+                                                fetchBuyerOrders();
+                                                fetchProducts();
+                                                showToast(`🎉 Order Placed! Reference #${res.data.order_group_id || 'AG'}`);
+                                            } catch (err) {
+                                                showToast(err.response?.data?.detail || 'Checkout failed. Stock changed.');
+                                                setCheckoutStep('cart');
+                                            }
+                                        }}
+                                        className="w-full py-4 rounded-2xl font-bold text-sm shadow-xl bg-[#EA580C] hover:bg-[#C2410C] text-white shadow-orange-600/25 transition"
+                                    >Confirm & Place Order</button>
                                 </div>
                             </div>
                         )}
@@ -591,14 +617,14 @@ export default function BuyerDashboard() {
                                 </div>
 
                                 <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                                    <button 
-                                        onClick={() => { setCheckoutStep('cart'); setActiveView('orders'); }} 
+                                    <button
+                                        onClick={() => { setCheckoutStep('cart'); setActiveView('orders'); }}
                                         className="flex-1 bg-[#EA580C] hover:bg-[#C2410C] text-white py-3.5 rounded-xl font-bold text-xs sm:text-sm transition shadow-lg shadow-orange-600/25"
                                     >
                                         Track in My Orders →
                                     </button>
-                                    <button 
-                                        onClick={() => { setCheckoutStep('cart'); setActiveView('browse'); }} 
+                                    <button
+                                        onClick={() => { setCheckoutStep('cart'); setActiveView('browse'); }}
                                         className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 py-3.5 rounded-xl font-bold text-xs sm:text-sm transition"
                                     >
                                         Continue Procurement
@@ -659,26 +685,30 @@ export default function BuyerDashboard() {
                                                         <div className="space-y-1.5 flex-1">
                                                             <div className="flex flex-wrap items-center gap-2">
                                                                 <span className="text-xs font-mono text-emerald-700 font-bold">SUB-ORDER #{order.order_number}</span>
-                                                                <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-mono font-bold ${
-                                                                    isPending ? 'bg-amber-100 text-amber-800 border border-amber-200' :
-                                                                    ['confirmed', 'accepted'].includes(sLower) ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' :
-                                                                    ['picked up', 'picked_up'].includes(sLower) ? 'bg-blue-100 text-blue-800 border border-blue-200' :
-                                                                    ['in transit', 'in_transit'].includes(sLower) ? 'bg-purple-100 text-purple-800 border border-purple-200' :
-                                                                    sLower === 'delivered' ? 'bg-teal-100 text-teal-800 border border-teal-200' :
-                                                                    'bg-red-100 text-red-700 border border-red-200'
-                                                                }`}>
+                                                                <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-mono font-bold ${isPending ? 'bg-amber-100 text-amber-800 border border-amber-200' :
+                                                                        ['confirmed', 'accepted'].includes(sLower) ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' :
+                                                                            ['picked up', 'picked_up'].includes(sLower) ? 'bg-blue-100 text-blue-800 border border-blue-200' :
+                                                                                ['in transit', 'in_transit'].includes(sLower) ? 'bg-purple-100 text-purple-800 border border-purple-200' :
+                                                                                    sLower === 'delivered' ? 'bg-teal-100 text-teal-800 border border-teal-200' :
+                                                                                        'bg-red-100 text-red-700 border border-red-200'
+                                                                    }`}>
                                                                     {isPending ? '⏳ Awaiting Farmer Confirmation' :
-                                                                     ['confirmed', 'accepted'].includes(sLower) ? '✅ Confirmed by Farmer' :
-                                                                     ['picked up', 'picked_up'].includes(sLower) ? '📦 Picked Up from Farm' :
-                                                                     ['in transit', 'in_transit'].includes(sLower) ? '🚚 In Transit to Depot' :
-                                                                     sLower === 'delivered' ? '🎉 Delivered & Verified' :
-                                                                     sLower === 'rejected' ? '✕ Rejected by Farmer' :
-                                                                     '✕ Cancelled by Buyer'}
+                                                                        ['confirmed', 'accepted'].includes(sLower) ? '✅ Confirmed by Farmer' :
+                                                                            ['picked up', 'picked_up'].includes(sLower) ? '📦 Picked Up from Farm' :
+                                                                                ['in transit', 'in_transit'].includes(sLower) ? '🚚 In Transit to Depot' :
+                                                                                    sLower === 'delivered' ? '🎉 Delivered & Verified' :
+                                                                                        sLower === 'rejected' ? '✕ Rejected by Farmer' :
+                                                                                            '✕ Cancelled by Buyer'}
+                                                                </span>
+                                                                {/* NEW: F2C/F2W2C Tag */}
+                                                                <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-mono font-bold ${order.delivery_mode === 'F2W2C' ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-orange-100 text-orange-700 border border-orange-200'
+                                                                    }`}>
+                                                                    {order.delivery_mode === 'F2W2C' ? 'Warehouse Route' : 'Direct Route'}
                                                                 </span>
                                                             </div>
                                                             <h4 className="font-bold text-gray-900 text-base">{order.quantity_kg}kg {order.crop_name}</h4>
                                                             <p className="text-xs text-gray-500 flex items-center gap-1.5">
-                                                                <span>Farmer: <b>{order.farmer_name}</b></span> • 
+                                                                <span>Farmer: <b>{order.farmer_name}</b></span> •
                                                                 <span>Rate: <b>₹{order.price_per_kg}/kg</b></span>
                                                             </p>
                                                             {order.delivery_address && (
@@ -729,8 +759,8 @@ export default function BuyerDashboard() {
                                                             <div className="pt-4 border-t border-gray-100">
                                                                 <div className="flex items-center justify-between relative px-2 sm:px-6">
                                                                     <div className="absolute top-4 left-6 right-6 h-1 bg-gray-200 z-0" />
-                                                                    <div 
-                                                                        className="absolute top-4 left-6 h-1 bg-emerald-500 z-0 transition-all duration-500" 
+                                                                    <div
+                                                                        className="absolute top-4 left-6 h-1 bg-emerald-500 z-0 transition-all duration-500"
                                                                         style={{ width: `${(stage / 4) * 88}%` }}
                                                                     />
                                                                     {stages.map((st, idx) => {
@@ -739,11 +769,10 @@ export default function BuyerDashboard() {
                                                                         const isCurrent = idx === stage;
                                                                         return (
                                                                             <div key={idx} className="relative z-10 flex flex-col items-center text-center">
-                                                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
-                                                                                    isPassed 
-                                                                                        ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30' 
+                                                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${isPassed
+                                                                                        ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30'
                                                                                         : 'bg-white text-gray-400 border-2 border-gray-200'
-                                                                                } ${isCurrent ? 'ring-4 ring-emerald-100 scale-110' : ''}`}>
+                                                                                    } ${isCurrent ? 'ring-4 ring-emerald-100 scale-110' : ''}`}>
                                                                                     <IconCmp size={14} />
                                                                                 </div>
                                                                                 <span className={`text-[10px] font-mono mt-1 font-bold ${isPassed ? 'text-emerald-800' : 'text-gray-400'}`}>
@@ -905,4 +934,3 @@ export default function BuyerDashboard() {
         </div>
     );
 }
-

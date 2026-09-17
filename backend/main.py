@@ -94,7 +94,9 @@ def ensure_columns():
         needed_order_cols = {
             "order_group_id": "VARCHAR", "farmer_id": "INTEGER", "rejection_reason": "VARCHAR",
             "cancellation_window_hours": "INTEGER DEFAULT 24", "product_id": "INTEGER",
-            "payment_method": "VARCHAR", "delivery_address": "VARCHAR", "order_note": "VARCHAR"
+            "payment_method": "VARCHAR", "delivery_address": "VARCHAR", "order_note": "VARCHAR",
+            "delivery_mode": "VARCHAR DEFAULT 'F2C'",
+            "transporter_id": "INTEGER"
         }
         for col_name, col_type in needed_order_cols.items():
             if col_name not in order_cols:
@@ -177,7 +179,7 @@ class CartUpdateRequest(BaseModel): buyer_name: str; cart_item_id: int; quantity
 class CartRemoveRequest(BaseModel): buyer_name: str; cart_item_id: int
 class CartClearRequest(BaseModel): buyer_name: str
 class CheckoutItem(BaseModel): product_id: int; farmer_name: str; crop_name: str; quantity_kg: float; price_per_kg: float; cancellation_window_hours: Optional[int] = 24
-class CheckoutRequest(BaseModel): buyer_name: str; items: List[CheckoutItem]; delivery_address: Optional[str] = None; order_note: Optional[str] = None; payment_method: Optional[str] = "Bank Transfer (NEFT/RTGS)"
+class CheckoutRequest(BaseModel): buyer_name: str; items: List[CheckoutItem]; delivery_address: Optional[str] = None; order_note: Optional[str] = None; payment_method: Optional[str] = "Bank Transfer (NEFT/RTGS)";delivery_mode: Optional[str] = "F2C"
 class OrderStatusUpdate(BaseModel): order_id: int; status: str; rejection_reason: Optional[str] = None
 class CancelOrderRequest(BaseModel): order_id: int
 class ProductUpdateRequest(BaseModel): crop_name: Optional[str] = None; price_per_kg: Optional[float] = None; add_quantity: Optional[float] = None; quality_grade: Optional[str] = None; harvest_date: Optional[str] = None; negotiable: Optional[str] = None; status: Optional[str] = None
@@ -542,11 +544,19 @@ def withdraw_wallet(req: WithdrawalRequest, db: Session = Depends(get_db)):
 
 # --- ORDERS & CHECKOUT ENDPOINTS ---
 @app.get("/api/orders/")
-def get_orders(farmer_name: Optional[str] = Query(None), farmer_id: Optional[int] = Query(None), buyer_name: Optional[str] = Query(None), db: Session = Depends(get_db)):
+def get_orders(
+    farmer_name: Optional[str] = Query(None), 
+    farmer_id: Optional[int] = Query(None), 
+    buyer_name: Optional[str] = Query(None), 
+    status: Optional[str] = Query(None), # NEW: Filter by status
+    db: Session = Depends(get_db)
+):
     query = db.query(models.Order)
     if farmer_id: query = query.filter(models.Order.farmer_id == farmer_id)
     elif farmer_name and farmer_name.strip(): query = query.filter(or_(models.Order.farmer_name.ilike(farmer_name.strip()), models.Order.farmer_name.ilike(f"%{farmer_name.strip()}%")))
     if buyer_name and buyer_name.strip(): query = query.filter(models.Order.buyer_name.ilike(buyer_name.strip()))
+    if status and status.strip(): query = query.filter(models.Order.status == status.strip()) # NEW LOGIC
+    
     return query.order_by(models.Order.id.desc()).all()
 
 @app.post("/api/checkout")
@@ -576,7 +586,8 @@ def process_checkout(req: CheckoutRequest, db: Session = Depends(get_db)):
                 crop_name=item.crop_name, quantity_kg=item.quantity_kg, price_per_kg=item.price_per_kg,
                 total_amount=round(item.quantity_kg * item.price_per_kg, 2), status="Pending Farmer Confirmation",
                 cancellation_window_hours=item.cancellation_window_hours or 24, product_id=item.product_id,
-                payment_method=req.payment_method or "Bank Transfer (NEFT/RTGS)", delivery_address=req.delivery_address or "Direct APMC Depot", order_note=req.order_note
+                payment_method=req.payment_method or "Bank Transfer (NEFT/RTGS)", delivery_address=req.delivery_address or "Direct APMC Depot", order_note=req.order_note,
+                delivery_mode=req.delivery_mode or "F2C"
             )
             db.add(new_order); db.flush(); created_orders.append(new_order)
 
@@ -585,14 +596,16 @@ def process_checkout(req: CheckoutRequest, db: Session = Depends(get_db)):
 
         db.commit()
         for o in created_orders: db.refresh(o)
-        orders_list = [{"id": o.id, "order_group_id": o.order_group_id, "order_number": o.order_number, "buyer_name": o.buyer_name, "farmer_name": o.farmer_name, "farmer_id": o.farmer_id, "crop_name": o.crop_name, "quantity_kg": o.quantity_kg, "price_per_kg": o.price_per_kg, "total_amount": o.total_amount, "status": o.status, "cancellation_window_hours": o.cancellation_window_hours, "product_id": o.product_id, "payment_method": o.payment_method, "delivery_address": o.delivery_address, "order_note": o.order_note, "created_at": o.created_at.isoformat() if o.created_at else None} for o in created_orders]
+        
+        # THIS LINE MUST HAVE EXACTLY 8 SPACES (2 TABS) OF INDENTATION
+        orders_list = [{"id": o.id, "order_group_id": o.order_group_id, "order_number": o.order_number, "buyer_name": o.buyer_name, "farmer_name": o.farmer_name, "farmer_id": o.farmer_id, "crop_name": o.crop_name, "quantity_kg": o.quantity_kg, "price_per_kg": o.price_per_kg, "total_amount": o.total_amount, "status": o.status, "cancellation_window_hours": o.cancellation_window_hours, "product_id": o.product_id, "payment_method": o.payment_method, "delivery_address": o.delivery_address, "order_note": o.order_note, "delivery_mode": o.delivery_mode, "created_at": o.created_at.isoformat() if o.created_at else None} for o in created_orders]
+        
         logger.info(f"Checkout completed. Created {len(created_orders)} sub-orders under Group ID {group_id}. Stock deducted instantly.")
         return {"message": "Order placed successfully! Stock deducted instantly.", "order_group_id": group_id, "orders": orders_list}
     except HTTPException:
         db.rollback(); raise
     except Exception as e:
         db.rollback(); logger.error(f"Error during checkout: {e}", exc_info=True); raise HTTPException(status_code=500, detail=str(e))
-
 @app.post("/api/orders/update_status")
 def update_order_status(req: OrderStatusUpdate, db: Session = Depends(get_db)):
     order = db.query(models.Order).filter(models.Order.id == req.order_id).first()
@@ -645,6 +658,52 @@ def cancel_order(req: CancelOrderRequest, db: Session = Depends(get_db)):
     logger.info(f"Order #{order.order_number} cancelled by buyer. Stock added back.")
     return {"message": "Order cancelled successfully", "status": order.status}
 
+# --- LOGISTICS SCALABLE DISPATCH (UBER MODEL) ---
+
+@app.get("/api/logistics/trips/{transporter_id}")
+def get_available_trips(transporter_id: int, db: Session = Depends(get_db)):
+    # 1. Get the transporter's profile to check capacity
+    transporter = db.query(models.User).filter(models.User.id == transporter_id, models.User.role == "logistics").first()
+    if not transporter:
+        raise HTTPException(status_code=404, detail="Transporter not found.")
+        
+    # Parse their vehicle capacity (e.g., "500 kg" -> 500.0)
+    max_capacity = parse_numeric_moq(transporter.load_capacity) if transporter.load_capacity else 10000.0
+    
+    # 2. Find Orders that are Confirmed, NOT yet assigned to a transporter, and within capacity
+    available_orders = db.query(models.Order).filter(
+        models.Order.status == "Confirmed",
+        models.Order.transporter_id == None
+    ).all()
+    
+    mapped_trips = []
+    for o in available_orders:
+        if o.quantity_kg <= max_capacity:
+            mapped_trips.append({
+                "id": o.id, "farmer_name": o.farmer_name, "buyer_name": o.buyer_name,
+                "crop_name": o.crop_name, "quantity_kg": o.quantity_kg, "delivery_mode": o.delivery_mode or "F2C",
+                "delivery_address": o.delivery_address, "created_at": o.created_at.isoformat() if o.created_at else None
+            })
+    return mapped_trips
+
+class AssignTripRequest(BaseModel):
+    order_id: int
+    transporter_id: int
+
+@app.post("/api/orders/assign")
+def assign_trip(req: AssignTripRequest, db: Session = Depends(get_db)):
+    order = db.query(models.Order).filter(models.Order.id == req.order_id).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    if order.transporter_id is not None:
+        raise HTTPException(status_code=400, detail="Trip already accepted by another transporter.")
+        
+    order.transporter_id = req.transporter_id
+    order.status = "Assigned"
+    db.commit()
+    return {"message": "Trip assigned successfully!", "status": "Assigned"}    
+    
+
 @app.get("/")
 def read_root(): return {"message": "AgriConnect API v3.0 is running! (Demand Forecasting + Route Optimization) 🌾🚚"}
 
@@ -666,6 +725,7 @@ if _os.path.isdir(_FORECAST_DIR) and _FORECAST_DIR not in _sys.path:
     _sys.path.insert(0, _FORECAST_DIR)
 
 try:
+    # pyrefly: ignore [missing-import]
     from forecast_api import forecast_router as _forecast_router
     app.include_router(_forecast_router)
     logger.info(f"[AgriConnect] Demand Forecasting routes mounted at /api/forecast/*")
@@ -673,7 +733,6 @@ except Exception as _fe:
     logger.warning(f"[AgriConnect] Forecasting module not loaded: {_fe}. "
                    "Run 'pip install prophet xgboost scikit-learn joblib pandas' and ensure "
                    "demand_forecasting/ is a sibling of this backend/ directory.")
-
 # ===========================================================================
 # ROUTE OPTIMIZATION INTEGRATION (VERSION 3)
 # ===========================================================================

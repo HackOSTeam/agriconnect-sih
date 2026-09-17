@@ -16,25 +16,20 @@ export default function AdminLoginPage() {
         setError('');
         try {
             const res = await axios.post('http://127.0.0.1:8000/api/login', {
-                identifier: name, password: password, role: 'logistics', auth_type: 'password'
+                identifier: name,
+                password: password,
+                role: 'logistics',
+                auth_type: 'password'
             });
+
             if (res.data.token) localStorage.setItem('token', res.data.token);
+            if (res.data.user_id) localStorage.setItem('userId', res.data.user_id);
             localStorage.setItem('role', 'logistics');
             localStorage.setItem('userName', res.data.name);
+
             navigate('/logistics');
         } catch (err) {
-            // --- BULLETPROOF ERROR EXTRACTION ---
-            const errDetail = err.response?.data?.detail;
-            let errMsg = 'Login failed. Please register first.';
-
-            if (Array.isArray(errDetail)) {
-                errMsg = errDetail.map(e => `${e.loc.slice(-1)[0]}: ${e.msg}`).join(', ');
-            } else if (typeof errDetail === 'string') {
-                errMsg = errDetail;
-            } else if (err.message) {
-                errMsg = err.message;
-            }
-            setError(errMsg);
+            setError(err.response?.data?.detail || 'Login failed. Please register first.');
         }
     };
 

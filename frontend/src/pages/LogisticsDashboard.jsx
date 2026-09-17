@@ -18,19 +18,21 @@ export default function LogisticsDashboard() {
     const [toastMessage, setToastMessage] = useState('');
     const name = localStorage.getItem('userName') || 'Logistics Partner';
 
-    // Teammates' waypoint & OTP verification state
-    const [verifiedPickups, setVerifiedPickups] = useState([false, false, false]);
+    const [verifiedPickups, setVerifiedPickups] = useState({});
+
+    // NEW: Dynamic state for real assigned tasks
+    const [assignedTasks, setAssignedTasks] = useState([]);
+    const [availableTrips, setAvailableTrips] = useState([]);
+    const userId = localStorage.getItem('userId') || 0;
 
     const showToast = (msg) => {
         setToastMessage(msg);
         setTimeout(() => setToastMessage(''), 3500);
     };
 
-    const handleVerifyOtp = (index) => {
-        const updated = [...verifiedPickups];
-        updated[index] = true;
-        setVerifiedPickups(updated);
-        showToast(`✅ Farm ${index + 1} Harvest Batch OTP Verified & Loaded into Van!`);
+    const handleVerifyOtp = (taskId) => {
+        setVerifiedPickups(prev => ({ ...prev, [taskId]: true }));
+        showToast(`✅ Harvest Batch OTP Verified & Loaded into Van!`);
     };
 
     const fetchProfile = async () => {
@@ -45,23 +47,79 @@ export default function LogisticsDashboard() {
         } catch (err) { console.error("Profile fetch error:", err); }
     };
 
-    useEffect(() => { fetchProfile(); }, []);
+    // NEW: Fetch real confirmed orders from the database
+    const fetchAssignedOrders = async () => {
+        try {
+            const res = await axios.get(`http://127.0.0.1:8000/api/orders/?status=Assigned`);
+            // Filter to only show orders assigned to THIS specific transporter
+            const mappedTasks = res.data
+                .filter(o => o.transporter_id == userId)
+                .map(order => ({
+                    id: order.id,
+                    mode: order.delivery_mode || 'F2C',
+                    priority: order.crop_name?.toLowerCase().includes('tomato') || order.crop_name?.toLowerCase().includes('leaf') ? 'Perishable - Priority' : 'Standard',
+                    farmer: order.farmer_name,
+                    address: order.delivery_address || 'Farm Location',
+                    produce: `${order.quantity_kg}kg ${order.crop_name}`,
+                    drop: `Buyer: ${order.buyer_name}`,
+                    time: new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    distance: '14 km'
+                }));
+            setAssignedTasks(mappedTasks);
+        } catch (err) {
+            console.error("Error fetching assigned tasks:", err);
+        }
+    };
 
-    const waypoints = [
-        { id: 1, name: 'Farm 1: Ramesh Patel (Haveli, Pune)', crop: '450kg Tomatoes', otp: '4910', status: verifiedPickups[0] ? 'Loaded' : 'Awaiting Pickup' },
-        { id: 2, name: 'Farm 2: Suresh Shinde (Saswad)', crop: '800kg Onions', otp: '3120', status: verifiedPickups[1] ? 'Loaded' : 'Next Stop' },
-        { id: 3, name: 'Farm 3: Vijay Gaikwad (Hadapsar)', crop: '350kg Capsicum', otp: '6081', status: verifiedPickups[2] ? 'Loaded' : 'Pending' },
-    ];
-    const completedCount = verifiedPickups.filter(Boolean).length;
+    const fetchAvailableTrips = async () => {
+        try {
+            const res = await axios.get(`http://127.0.0.1:8000/api/logistics/trips/${userId}`);
+            setAvailableTrips(res.data || []);
+        } catch (err) {
+            console.error("Error fetching available trips:", err);
+        }
+    };
 
-    const assignedTasks = [
-        { id: 1, priority: 'Perishable - Priority', farmer: 'Ramesh Patel', address: 'Haveli, Pune', produce: '500kg Tomatoes', drop: 'Pune APMC Hub', time: '11:30 AM', distance: '14 km' },
-        { id: 2, priority: 'Standard', farmer: 'Suresh Shinde', address: 'Saswad', produce: '800kg Onions', drop: 'Market Yard, Gultekdi', time: '2:00 PM', distance: '22 km' },
-    ];
+    const handleAcceptTrip = async (orderId) => {
+        try {
+            await axios.post('http://127.0.0.1:8000/api/orders/assign', {
+                order_id: orderId,
+                transporter_id: parseInt(userId)
+            });
+            showToast(`✅ Trip #${orderId} accepted! Loading into your queue.`);
+            fetchAvailableTrips();
+            fetchAssignedOrders();
+        } catch (err) {
+            showToast(err.response?.data?.detail || 'Failed to accept trip.');
+        }
+    };
+
+    useEffect(() => {
+        fetchProfile();
+        fetchAssignedOrders();
+        fetchAvailableTrips();
+        const interval = setInterval(() => {
+            fetchAssignedOrders();
+            fetchAvailableTrips();
+        }, 15000);
+        return () => clearInterval(interval);
+    }, [userId]);
+
+    // Dynamically map waypoints from real assigned tasks
+    const waypoints = assignedTasks.map((task, idx) => ({
+        id: task.id,
+        name: `Stop ${idx + 1}: ${task.farmer} (${task.address})`,
+        crop: task.produce,
+        otp: '4910', // Mock OTP for UI demo
+        status: verifiedPickups[task.id] ? 'Loaded' : 'Awaiting Pickup'
+    }));
+
+    const completedCount = waypoints.filter(w => w.status === 'Loaded').length;
 
     const menuItems = [
         { id: 'overview', label: 'Overview & Route AI', icon: Home },
-        { id: 'tasks', label: 'Tasks & Escrow Pickups', icon: Package, badge: assignedTasks.length },
+        { id: 'tasks', label: 'My Dispatch Queue', icon: Package, badge: assignedTasks.length },
+        { id: 'available', label: 'Available Trips', icon: Zap, badge: availableTrips.length },
         { id: 'vehicle', label: 'Vehicle & Profile', icon: Truck },
         { id: 'performance', label: 'Performance', icon: TrendingUp },
         { id: 'notifications', label: 'Notifications', icon: Bell, badge: 2 },
@@ -120,9 +178,8 @@ export default function LogisticsDashboard() {
                                 setStatus(next);
                                 showToast(`Status changed to ${next}`);
                             }}
-                            className={`text-xs px-3 py-1.5 rounded-full font-mono font-bold border transition ${
-                                status === 'Available' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-red-500/20 text-red-300 border-red-500/30'
-                            }`}
+                            className={`text-xs px-3 py-1.5 rounded-full font-mono font-bold border transition ${status === 'Available' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-red-500/20 text-red-300 border-red-500/30'
+                                }`}
                         >
                             <Power size={12} className="inline mr-1" /> {status}
                         </button>
@@ -142,9 +199,8 @@ export default function LogisticsDashboard() {
                             <button
                                 key={item.id}
                                 onClick={() => setActiveView(item.id)}
-                                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap ${
-                                    isActive ? 'bg-[#10B981] text-[#022C22] shadow-md font-bold' : 'text-gray-300 hover:text-white hover:bg-white/5'
-                                }`}
+                                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap ${isActive ? 'bg-[#10B981] text-[#022C22] shadow-md font-bold' : 'text-gray-300 hover:text-white hover:bg-white/5'
+                                    }`}
                             >
                                 <Icon size={16} />
                                 <span>{item.label}</span>
@@ -168,8 +224,8 @@ export default function LogisticsDashboard() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                             <div className="bg-white border border-gray-200 p-5 rounded-2xl shadow-sm">
                                 <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Today's Pickups</span>
-                                <div className="text-3xl font-bold text-[#0F172A] font-mono mt-1">{assignedTasks.length + waypoints.length}</div>
-                                <div className="text-[11px] text-emerald-700 mt-1 font-bold">{3 - completedCount} Pending Dispatch</div>
+                                <div className="text-3xl font-bold text-[#0F172A] font-mono mt-1">{assignedTasks.length}</div>
+                                <div className="text-[11px] text-emerald-700 mt-1 font-bold">{assignedTasks.length - completedCount} Pending Dispatch</div>
                             </div>
                             <div className="bg-white border border-gray-200 p-5 rounded-2xl shadow-sm">
                                 <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Total Payload</span>
@@ -225,43 +281,48 @@ export default function LogisticsDashboard() {
                                     </p>
                                 </div>
                                 <span className="text-xs font-mono bg-emerald-50 text-emerald-800 px-3 py-1.5 rounded-xl font-bold border border-emerald-200 self-start sm:self-auto">
-                                    {3 - completedCount} Pickups Pending in Current Dispatch
+                                    {assignedTasks.length - completedCount} Pickups Pending in Current Dispatch
                                 </span>
                             </div>
 
-                            <div className="grid md:grid-cols-3 gap-4">
-                                {waypoints.map((wp, idx) => (
-                                    <div key={wp.id} className="p-4 bg-gray-50 border border-gray-200 rounded-2xl space-y-3 text-xs">
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <div className="font-bold text-gray-900 text-sm">{wp.name}</div>
-                                                <span className="text-gray-500 font-mono">{wp.crop}</span>
+                            {assignedTasks.length === 0 ? (
+                                <div className="text-center py-10 text-gray-500 text-sm">
+                                    No active dispatches yet. Waiting for farmer confirmations...
+                                </div>
+                            ) : (
+                                <div className="grid md:grid-cols-3 gap-4">
+                                    {waypoints.map((wp, idx) => (
+                                        <div key={wp.id} className="p-4 bg-gray-50 border border-gray-200 rounded-2xl space-y-3 text-xs">
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <div className="font-bold text-gray-900 text-sm">{wp.name}</div>
+                                                    <span className="text-gray-500 font-mono">{wp.crop}</span>
+                                                </div>
+                                                <span className={`px-2.5 py-1 rounded-full font-mono font-bold text-[11px] ${verifiedPickups[wp.id] ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                                                    }`}>
+                                                    {wp.status}
+                                                </span>
                                             </div>
-                                            <span className={`px-2.5 py-1 rounded-full font-mono font-bold text-[11px] ${
-                                                verifiedPickups[idx] ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                                            }`}>
-                                                {wp.status}
-                                            </span>
-                                        </div>
 
-                                        {!verifiedPickups[idx] ? (
-                                            <div className="pt-2 border-t border-gray-200">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleVerifyOtp(idx)}
-                                                    className="w-full bg-[#059669] hover:bg-[#047857] text-white py-2 rounded-xl font-bold flex items-center justify-center gap-1.5 transition shadow"
-                                                >
-                                                    <Zap size={14} /> 1-Click Verify OTP ({wp.otp})
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <div className="text-emerald-700 font-bold font-mono flex items-center gap-1.5 pt-1 text-[11px]">
-                                                <CheckCircle2 size={14} /> Batch loaded into van & escrow payment authorized
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
+                                            {!verifiedPickups[wp.id] ? (
+                                                <div className="pt-2 border-t border-gray-200">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleVerifyOtp(wp.id)}
+                                                        className="w-full bg-[#059669] hover:bg-[#047857] text-white py-2 rounded-xl font-bold flex items-center justify-center gap-1.5 transition shadow"
+                                                    >
+                                                        <Zap size={14} /> 1-Click Verify OTP ({wp.otp})
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="text-emerald-700 font-bold font-mono flex items-center gap-1.5 pt-1 text-[11px]">
+                                                    <CheckCircle2 size={14} /> Batch loaded into van & escrow payment authorized
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
@@ -279,37 +340,40 @@ export default function LogisticsDashboard() {
                             <h3 className="font-bold text-gray-900 text-md flex items-center gap-2 font-serif">
                                 <ShieldCheck size={18} className="text-emerald-700" /> Active Route Stops (Farm Waypoints)
                             </h3>
-                            <div className="grid md:grid-cols-3 gap-4">
-                                {waypoints.map((wp, idx) => (
-                                    <div key={wp.id} className="p-4 bg-gray-50 border border-gray-200 rounded-2xl space-y-3 text-xs">
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <div className="font-bold text-gray-900 text-sm">{wp.name}</div>
-                                                <span className="text-gray-500 font-mono">{wp.crop}</span>
+                            {assignedTasks.length === 0 ? (
+                                <div className="text-center py-6 text-gray-500 text-sm">No active tasks.</div>
+                            ) : (
+                                <div className="grid md:grid-cols-3 gap-4">
+                                    {waypoints.map((wp, idx) => (
+                                        <div key={wp.id} className="p-4 bg-gray-50 border border-gray-200 rounded-2xl space-y-3 text-xs">
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <div className="font-bold text-gray-900 text-sm">{wp.name}</div>
+                                                    <span className="text-gray-500 font-mono">{wp.crop}</span>
+                                                </div>
+                                                <span className={`px-2.5 py-1 rounded-full font-mono font-bold text-[11px] ${verifiedPickups[wp.id] ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                                                    }`}>
+                                                    {wp.status}
+                                                </span>
                                             </div>
-                                            <span className={`px-2.5 py-1 rounded-full font-mono font-bold text-[11px] ${
-                                                verifiedPickups[idx] ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                                            }`}>
-                                                {wp.status}
-                                            </span>
-                                        </div>
 
-                                        {!verifiedPickups[idx] ? (
-                                            <button
-                                                type="button"
-                                                onClick={() => handleVerifyOtp(idx)}
-                                                className="w-full bg-[#059669] hover:bg-[#047857] text-white py-2 rounded-xl font-bold flex items-center justify-center gap-1.5 transition shadow"
-                                            >
-                                                <Zap size={14} /> 1-Click Verify OTP ({wp.otp})
-                                            </button>
-                                        ) : (
-                                            <div className="text-emerald-700 font-bold font-mono flex items-center gap-1.5 pt-1 text-[11px]">
-                                                <CheckCircle2 size={14} /> Verified & Loaded
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
+                                            {!verifiedPickups[wp.id] ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleVerifyOtp(wp.id)}
+                                                    className="w-full bg-[#059669] hover:bg-[#047857] text-white py-2 rounded-xl font-bold flex items-center justify-center gap-1.5 transition shadow"
+                                                >
+                                                    <Zap size={14} /> 1-Click Verify OTP ({wp.otp})
+                                                </button>
+                                            ) : (
+                                                <div className="text-emerald-700 font-bold font-mono flex items-center gap-1.5 pt-1 text-[11px]">
+                                                    <CheckCircle2 size={14} /> Verified & Loaded
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
                         {assignedTasks.map((task, idx) => (
@@ -319,11 +383,16 @@ export default function LogisticsDashboard() {
                                         <span className="text-xs font-mono text-[#059669] font-bold">DISPATCH #{idx + 1}</span>
                                         <h3 className="text-lg font-bold text-gray-900">{task.address}</h3>
                                     </div>
-                                    <span className={`text-[10px] px-2.5 py-1 rounded-full font-mono font-bold ${
-                                        task.priority.includes('Priority') ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-blue-100 text-blue-700'
-                                    }`}>
-                                        {task.priority}
-                                    </span>
+                                    <div className="flex flex-col items-end gap-1">
+                                        <span className={`text-[10px] px-2.5 py-1 rounded-full font-mono font-bold ${task.priority.includes('Priority') ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-blue-100 text-blue-700'
+                                            }`}>
+                                            {task.priority}
+                                        </span>
+                                        <span className={`text-[10px] px-2.5 py-1 rounded-full font-mono font-bold ${task.mode === 'F2C' ? 'bg-orange-100 text-orange-700' : 'bg-emerald-100 text-emerald-700'
+                                            }`}>
+                                            {task.mode === 'F2C' ? 'Direct Delivery (F2C)' : 'Warehouse Drop-off (F2W2C)'}
+                                        </span>
+                                    </div>
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs mb-4">
                                     <div className="flex items-start gap-2 bg-emerald-50 p-3 rounded-xl">
@@ -345,6 +414,44 @@ export default function LogisticsDashboard() {
                         ))}
                     </div>
                 )}
+
+                {/* --- 3. AVAILABLE TRIPS (UBER MODEL) --- */}
+                {activeView === 'available' && (
+                    <div className="space-y-6">
+                        <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
+                            <h2 className="text-2xl font-bold text-gray-900 font-serif">Available Trips</h2>
+                            <p className="text-xs text-gray-500">Filtered based on your vehicle capacity ({profile.load_capacity}). First-come, first-serve.</p>
+                        </div>
+                        {availableTrips.length === 0 ? (
+                            <div className="text-center py-16 bg-white rounded-3xl border border-gray-200 space-y-4 shadow-sm">
+                                <Zap size={48} className="mx-auto text-gray-300" />
+                                <h3 className="text-xl font-bold text-gray-900">No Trips Available</h3>
+                                <p className="text-xs text-gray-500">Waiting for farmers to confirm orders...</p>
+                            </div>
+                        ) : (
+                            availableTrips.map(trip => (
+                                <div key={trip.id} className="bg-white p-6 rounded-3xl shadow-sm border-2 border-dashed border-emerald-300 flex flex-col md:flex-row justify-between items-start gap-4">
+                                    <div>
+                                        <span className="text-xs font-mono text-emerald-700 font-bold">ORDER #{trip.id}</span>
+                                        <h3 className="text-lg font-bold text-gray-900">{trip.quantity_kg}kg {trip.crop_name}</h3>
+                                        <p className="text-xs text-gray-500 mt-1 flex items-center gap-1"><MapPin size={12} className="text-emerald-600" /> From: {trip.farmer_name}</p>
+                                        <p className="text-xs text-gray-500 flex items-center gap-1"><Navigation size={12} className="text-amber-600" /> To: {trip.buyer_name}</p>
+                                        <span className={`mt-2 inline-block text-[10px] px-2.5 py-1 rounded-full font-mono font-bold ${trip.delivery_mode === 'F2C' ? 'bg-orange-100 text-orange-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                                            {trip.delivery_mode === 'F2C' ? 'Direct Delivery' : 'Warehouse Drop-off'}
+                                        </span>
+                                    </div>
+                                    <button
+                                        onClick={() => handleAcceptTrip(trip.id)}
+                                        className="px-6 py-3 bg-[#059669] hover:bg-[#047857] text-white rounded-xl font-bold text-sm transition flex items-center gap-2 shadow whitespace-nowrap"
+                                    >
+                                        <CheckCircle2 size={16} /> Accept Trip
+                                    </button>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                )}
+
 
                 {/* --- 3. VEHICLE & PROFILE MANAGEMENT --- */}
                 {activeView === 'vehicle' && (
